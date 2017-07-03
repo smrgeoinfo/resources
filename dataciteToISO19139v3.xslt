@@ -102,20 +102,31 @@
 			xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml"
 			xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://www.isotc211.org/2005/gmd/gmd.xsd">
 
-			<!-- the fileIdentifier and a datestamp of the conversion 
-					fits for harvesting. The fileIdentifier identifies the 
+			<!--  The fileIdentifier identifies the 
 				metadata record, not the described resource which is identified by a DOI.
-			Since DataCite does not provide a metadata record identifier, generate
-			a checksum value based on concatenating the datacite Required fields-->
-			<xsl:variable name="theFileIdentifier">
-				<xsl:value-of select="//*[local-name() = 'identifier']"/>
-			</xsl:variable>
-
+			-->
+			
+			<xsl:variable name="fileIdentifierPrefix" select="string('urn:ieda:')"/>
 			<gmd:fileIdentifier>
-				<gco:CharacterString>urn:ieda:metadata:for:doi:<xsl:value-of
-						select="$theFileIdentifier"/>
+				<gco:CharacterString> 
+					<xsl:choose>
+						<xsl:when test="string-length($datacite-identifier)&gt; 0 and count($datacite-identifier[@identifierType = 'DOI']) &gt; 0">
+							<xsl:value-of
+								select="concat($fileIdentifierPrefix, string('metadataabout:'),normalize-space(translate($datacite-identifier,'/:','--')))"/>
+						</xsl:when>
+						<xsl:when test="count($datacite-alternateIDs/*[local-name() = 'alternateIdentifier'][@alternateIdentifierType='IEDA submission_ID']) &gt; 0">
+							<xsl:value-of
+								select="concat($fileIdentifierPrefix, string('metadataabout:'),
+								     normalize-space(substring-after($datacite-alternateIDs/*[local-name() = 'alternateIdentifier'][@alternateIdentifierType='IEDA submission_ID']/text(),'urn:')))"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of
+								select="concat($fileIdentifierPrefix, string('metadata:'),normalize-space(translate($datacite-titles/*[local-name() = 'title'][1],'/: ,','----')))"/>
+						</xsl:otherwise>
+					</xsl:choose>
 				</gco:CharacterString>
 			</gmd:fileIdentifier>
+
 			<gmd:language>
 				<gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/"
 					codeListValue="eng">eng</gmd:LanguageCode>
