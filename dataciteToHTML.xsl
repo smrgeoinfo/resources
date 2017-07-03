@@ -87,6 +87,9 @@
                                             <xsl:when test="contains($thepublisher,'Integrated Earth Data Applications')">
                                                 <xsl:value-of select="string('Interdisciplinary Earth Data Alliance')"/>
                                             </xsl:when>
+                                            <xsl:when test="contains(normalize-space($thepublisher),'EarthChem Library')">
+                                                <xsl:value-of select="string('EarthChem Library')"/>
+                                            </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of  disable-output-escaping="yes" select="normalize-space(string($thepublisher))"/>
                                             </xsl:otherwise>
@@ -423,6 +426,8 @@
 
 
     <xsl:template name="relIDHandler">
+        <xsl:if test="string-length(.)>1 and not(contains(.,'nknown'))
+            and not(contains(.,'group:'))">
         <div class="row">
             <div class="title">
                 <xsl:value-of select="./@relationType"/>
@@ -456,12 +461,14 @@
                     </div>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:if test="string-length(.)>1 and not(contains(.,'nknown'))">
+                    
                     <div class="description">
                         <xsl:choose>
-                            <!-- resource might be part of a collection, identifed with a prefix ending in group: -->
+                            <!-- this test was moved outside the div so we don't get the relType in output
+                               but leave here to allow for otehr special cases to be handled-->
                             <xsl:when test="contains(.,'group:') ">
-                                <xsl:value-of select="substring-after(., 'group:')"/>
+                                <!--<xsl:value-of select="substring-after(., 'group:')"/>-->
+                                <!-- don't report the  'grouping', its for internal purposes -->
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="@relatedIdentifierType"/>
@@ -470,10 +477,11 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </div>
-                    </xsl:if>
+                    
                 </xsl:otherwise>
             </xsl:choose>
         </div>
+    </xsl:if>
     </xsl:template>
 
 
