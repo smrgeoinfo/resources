@@ -85,10 +85,7 @@
                                         <xsl:variable name="thepublisher" select="//*[local-name() = 'publisher']"/>
                                         <xsl:choose>
                                             <xsl:when test="contains($thepublisher,'Integrated Earth Data Applications')">
-                                                <xsl:value-of select="string('Interdisciplinary Earth Data Alliance (IEDA)')"/>
-                                            </xsl:when>
-                                            <xsl:when test="contains(normalize-space($thepublisher),'EarthChem Library')">
-                                                <xsl:value-of select="string('Interdisciplinary Earth Data Alliance (IEDA)')"/>
+                                                <xsl:value-of select="string('Interdisciplinary Earth Data Alliance')"/>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of  disable-output-escaping="yes" select="normalize-space(string($thepublisher))"/>
@@ -120,8 +117,6 @@
                                 <!-- resource DESCRIPTIONS -->
                                 <xsl:if test="//*[local-name() = 'descriptions']">
                                     <xsl:for-each select="//*[local-name() = 'description']">
-                                        <xsl:if test="string-length(normalize-space(string(.))) > 0 and 
-                                            not(normalize-space(string(.)) = 'Related publications:')">
                                         <div class="row">
                                             <div class="title">
                                                 <xsl:choose>
@@ -144,7 +139,6 @@
                                                   select="normalize-space(string(.))"/>
                                             </div>
                                         </div>
-                                </xsl:if>
                                     </xsl:for-each>
                                 </xsl:if>
 
@@ -429,8 +423,6 @@
 
 
     <xsl:template name="relIDHandler">
-        <xsl:if test="string-length(.)>1 and not(contains(.,'nknown'))
-            and not(contains(.,'group:'))">
         <div class="row">
             <div class="title">
                 <xsl:value-of select="./@relationType"/>
@@ -464,14 +456,12 @@
                     </div>
                 </xsl:when>
                 <xsl:otherwise>
-                    
+                    <xsl:if test="string-length(.)>1 and not(contains(.,'nknown'))">
                     <div class="description">
                         <xsl:choose>
-                            <!-- this test was moved outside the div so we don't get the relType in output
-                               but leave here to allow for otehr special cases to be handled-->
+                            <!-- resource might be part of a collection, identifed with a prefix ending in group: -->
                             <xsl:when test="contains(.,'group:') ">
-                                <!--<xsl:value-of select="substring-after(., 'group:')"/>-->
-                                <!-- don't report the  'grouping', its for internal purposes -->
+                                <xsl:value-of select="substring-after(., 'group:')"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="@relatedIdentifierType"/>
@@ -480,11 +470,10 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </div>
-                    
+                    </xsl:if>
                 </xsl:otherwise>
             </xsl:choose>
         </div>
-    </xsl:if>
     </xsl:template>
 
 
