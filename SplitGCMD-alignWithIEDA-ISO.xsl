@@ -8,7 +8,7 @@
     <!-- this template takes a document containing a collection of gmd:MD_Metadata xml element inside of some container,
     and modifies the xml to conform to IEDA metadata practice. 
     The original document was created by SMR USGIN for unbundling CSW getRecord requests and doing some clean up work.
-    In this instance, the container is a collection of records from GCMD harvested via the GCMD API.
+    In this instance, the container is a collection of records from GCMD harvested via the GCMD CSW.
     Processing includes relocating content from invalid elements added by NASA, and copying distribution information from the 
     aggreationInformation section to the distribution section where it is normally placed. vertical extents have been converted 
     from encodeing using Geographic Identifier to gmd verticalExtent objects. 
@@ -36,7 +36,7 @@
             <xsl:variable name="filename"
                 select="concat(string(gmd:fileIdentifier/gco:CharacterString), '.xml')"/>
             <!--   <xsl:value-of select="$filename" />  Creating  -->
-            <xsl:result-document href="output1/{$filename}" format="xml">
+            <xsl:result-document href="file:/C:/Users/Stephen%20Richard/Google%20Drive/IEDA/Systems/USAP/output2/{$filename}" format="xml">
 
                 <gmd:MD_Metadata xmlns:gco="http://www.isotc211.org/2005/gco"
                     xmlns:gml="http://www.opengis.net/gml"
