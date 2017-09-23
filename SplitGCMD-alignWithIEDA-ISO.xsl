@@ -31,10 +31,14 @@
         keyword paths removed; gml 3.2 namespace declaration changed to gml so records will validate SMR 20170831
         ISO19115-2 (gmi: namespace) elements have been ignored if present (which is very rare).'"/>
     <xsl:template match="/">
+        <xsl:for-each select="//result">
+            
+            <xsl:variable name="filename"
+                select="concat(string(@concept-id), '.xml')"/>
         <xsl:for-each select="//gmd:MD_Metadata | //gmi:MI_Metadata">
             <xsl:variable name="var_InputRootNode" select="."/>
-            <xsl:variable name="filename"
-                select="concat(string(gmd:fileIdentifier/gco:CharacterString), '.xml')"/>
+<!--            <xsl:variable name="filename"
+                select="concat(string(gmd:fileIdentifier/gco:CharacterString), '.xml')"/>-->
             <!--   <xsl:value-of select="$filename" />  Creating  -->
             <xsl:result-document href="file:/C:/Users/Stephen%20Richard/Google%20Drive/IEDA/Systems/USAP/output2/{$filename}" format="xml">
 
@@ -46,7 +50,9 @@
 
                     <gmd:fileIdentifier>
                         <gco:CharacterString>
-                            <xsl:choose>
+                            
+                            <xsl:value-of select="string-before($filename,'.xml')"/>
+<!--                            <xsl:choose>
                                 <xsl:when test="$var_InputRootNode/gmd:fileIdentifier">
                                     <xsl:value-of
                                         select="$var_InputRootNode/gmd:fileIdentifier/gco:CharacterString"
@@ -57,7 +63,7 @@
                                         select="concat('http://www.opengis.net/def/nil/OGC/0/missing/', '2017-08-31T12:00:00Z')"
                                     />
                                 </xsl:otherwise>
-                            </xsl:choose>
+                            </xsl:choose>-->
                         </gco:CharacterString>
                     </gmd:fileIdentifier>
 
@@ -287,6 +293,7 @@
                -->
                 <!--                <xsl:copy-of select="."/>-->
             </xsl:result-document>
+        </xsl:for-each>
         </xsl:for-each>
     </xsl:template>
 
