@@ -4,7 +4,7 @@
     xmlns:gml="http://www.opengis.net/gml" xmlns:gmi="http://www.isotc211.org/2005/gmi"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:srv="http://www.isotc211.org/2005/srv"
     xmlns:usgin="http://resources.usgin.org/xslt/ISO2USGINISO" version="2.0">
-    
+
     <!-- this template takes a document containing a collection of gmd:MD_Metadata xml element inside of some container,
     and modifies the xml to conform to IEDA metadata practice. 
     The original document was created by SMR USGIN for unbundling CSW getRecord requests and doing some clean up work.
@@ -25,7 +25,8 @@
         select="'|collection|collection:dataset|collection:dataset:catalog|collection:physical artifact collection|document|document:image|document:image:stillimage|document:image:stillimage:human-generated image|document:image:stillimage:human-generated image:map|document:image:stillimage:photograph|document:image:stillimage:remote sensing earth image|document:image:moving image|document:sound|document:text|document:text:hypertext document|event|event:project|model|physical artifact|service|software|software:stand-alone-application|software:interactive resource|structured digital data item|sampling point|'"/>
 
     <xsl:variable name="metadataMaintenanceNote"
-        select="'This metadata was harvested via csw bulk download of 3177 records on 2017-09-23 in ISO19139 
+        select="
+            'This metadata was harvested from the NASA GCMD using the API to bulk download 3177 records on 2017-09-23 in ISO19139 
         xml format, and processed by IEDA SplitGCMD-api-alignWithIEDA.xsl to transform to conform 
         with IEDA metadata conventions. The transform is available on GitHub at 
         https://github.com/iedadata/resources. Vertical extent encoding moved from geographic 
@@ -36,27 +37,28 @@
         gmi:LE_Lineage elements. No other gmi content was found in the harvested record set.
         '"/>
     <xsl:template match="/">
-        <xsl:for-each select="//result">           
-            <xsl:variable name="filename"
-                select="concat(string(@concept-id), '.xml')"/>
-        <xsl:for-each select="gmd:MD_Metadata | gmi:MI_Metadata">
-            <xsl:variable name="var_InputRootNode" select="."/>
-<!--            <xsl:variable name="filename"
+        <xsl:for-each select="//result">
+            <xsl:variable name="filename" select="concat(string(@concept-id), '.xml')"/>
+            <xsl:for-each select="gmd:MD_Metadata | gmi:MI_Metadata">
+                <xsl:variable name="var_InputRootNode" select="."/>
+                <!--            <xsl:variable name="filename"
                 select="concat(string(gmd:fileIdentifier/gco:CharacterString), '.xml')"/>-->
-            <!--   <xsl:value-of select="$filename" />  Creating  -->
-            <xsl:result-document href="file:/C:/Users/Stephen%20Richard/Google%20Drive/IEDA/Systems/USAP/output/{$filename}" format="xml">
+                <!--   <xsl:value-of select="$filename" />  Creating  -->
+                <xsl:result-document
+                    href="file:/C:/Users/Stephen%20Richard/Google%20Drive/IEDA/Systems/USAP/output/{$filename}"
+                    format="xml">
 
-                <gmd:MD_Metadata xmlns:gco="http://www.isotc211.org/2005/gco"
-                    xmlns:gml="http://www.opengis.net/gml"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd">
+                    <gmd:MD_Metadata xmlns:gco="http://www.isotc211.org/2005/gco"
+                        xmlns:gml="http://www.opengis.net/gml"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd">
 
-                    <gmd:fileIdentifier>
-                        <gco:CharacterString>
-                            
-                            <xsl:value-of select="substring-before($filename,'.xml')"/>
-<!--                            <xsl:choose>
+                        <gmd:fileIdentifier>
+                            <gco:CharacterString>
+
+                                <xsl:value-of select="substring-before($filename, '.xml')"/>
+                                <!--                            <xsl:choose>
                                 <xsl:when test="$var_InputRootNode/gmd:fileIdentifier">
                                     <xsl:value-of
                                         select="$var_InputRootNode/gmd:fileIdentifier/gco:CharacterString"
@@ -68,118 +70,119 @@
                                     />
                                 </xsl:otherwise>
                             </xsl:choose>-->
-                        </gco:CharacterString>
-                    </gmd:fileIdentifier>
+                            </gco:CharacterString>
+                        </gmd:fileIdentifier>
 
-                    <!-- metadata language-->
-                    <xsl:choose>
-                        <xsl:when test="$var_InputRootNode/gmd:language">
-                            <xsl:copy-of select="$var_InputRootNode/gmd:language"
-                                copy-namespaces="no"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <gmd:language>
-                                <!--<xsl:comment>no language in source metadata, USGIN XSLT inserted default value</xsl:comment> -->
-                                <gmd:LanguageCode
-                                    codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php"
-                                    codeListValue="eng">eng</gmd:LanguageCode>
-                            </gmd:language>
-
-                        </xsl:otherwise>
-                    </xsl:choose>
-
-                    <!-- characterSet defaults to UTF-8 if no character set is specified -->
-                    <xsl:choose>
-                        <xsl:when test="$var_InputRootNode/gmd:characterSet">
-                            <xsl:copy-of select="$var_InputRootNode/gmd:characterSet"
-                                copy-namespaces="no"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <gmd:characterSet>
-                                <!--   <xsl:comment>no character set element in source metadata, USGIN XSLT inserted default value</xsl:comment>-->
-                                <gmd:MD_CharacterSetCode
-                                    codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode "
-                                    codeListValue="utf8">UTF-8</gmd:MD_CharacterSetCode>
-                            </gmd:characterSet>
-                        </xsl:otherwise>
-                    </xsl:choose>
-
-                    <!-- hierarchyLevel defaults to dataset -->
-                    <xsl:choose>
-                        <xsl:when test="$var_InputRootNode/gmd:hierarchyLevel">
-                            <xsl:copy-of select="$var_InputRootNode/gmd:hierarchyLevel"
-                                copy-namespaces="no"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <gmd:hierarchyLevel>
-                                <!--    <xsl:comment>no hierarchyLevel in source metadata, USGIN XSLT inserted default value</xsl:comment> -->
-                                <gmd:MD_ScopeCode
-                                    codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
-                                    codeListValue="Dataset">dataset</gmd:MD_ScopeCode>
-                            </gmd:hierarchyLevel>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                    <!-- copy hierarchyLevelName -->
-                    <xsl:choose>
-                        <xsl:when test="$var_InputRootNode/gmd:hierarchyLevelName">
-                            <xsl:copy-of select="$var_InputRootNode/gmd:hierarchyLevelName"
-                                copy-namespaces="no"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <gmd:hierarchyLevelName>
-                                <!--    <xsl:comment>no hierarchyLevelName in source metadata, USGIN XSLT inserted default value</xsl:comment> -->
-                                <gco:CharacterString>Missing</gco:CharacterString>
-                            </gmd:hierarchyLevelName>
-                        </xsl:otherwise>
-                    </xsl:choose>
-
-                    <!--        <xsl:apply-templates select="$var_InputRootNode/gmd:contact"/>  -->
-                    <!--use for multiple contact-->
-                    <xsl:for-each select="$var_InputRootNode/gmd:contact">
+                        <!-- metadata language-->
                         <xsl:choose>
-                            <xsl:when test="not(@gco:nilReason)">
-                        <gmd:contact>
-                            <xsl:call-template name="usgin:ResponsibleParty">
-                                <xsl:with-param name="inputParty" select="gmd:CI_ResponsibleParty"/>
-                                <xsl:with-param name="defaultRole">
-                                    <gmd:role>
-                                        <gmd:CI_RoleCode
-                                            codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                            codeListValue="pointOfContact"
-                                            >pointOfContact</gmd:CI_RoleCode>
-                                    </gmd:role>
-                                </xsl:with-param>
-                            </xsl:call-template>
-
-                        </gmd:contact>
+                            <xsl:when test="$var_InputRootNode/gmd:language">
+                                <xsl:copy-of select="$var_InputRootNode/gmd:language"
+                                    copy-namespaces="no"/>
                             </xsl:when>
-                        <xsl:otherwise>
-                            <gmd:contact gco:nilReason="missing"/>
-                        </xsl:otherwise>
+                            <xsl:otherwise>
+                                <gmd:language>
+                                    <!--<xsl:comment>no language in source metadata, USGIN XSLT inserted default value</xsl:comment> -->
+                                    <gmd:LanguageCode
+                                        codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php"
+                                        codeListValue="eng">eng</gmd:LanguageCode>
+                                </gmd:language>
+
+                            </xsl:otherwise>
                         </xsl:choose>
-                    </xsl:for-each>
-                    <gmd:dateStamp>
-                        <gco:DateTime>
-                            <xsl:call-template name="usgin:dateFormat">
-                                <xsl:with-param name="inputDate"
-                                    select="$var_InputRootNode/gmd:dateStamp"/>
-                            </xsl:call-template>
-                        </gco:DateTime>
-                    </gmd:dateStamp>
 
-                    <gmd:metadataStandardName>
-                        <gco:CharacterString>
-                            <xsl:value-of select="'ISO 19115:2003/19139'"/>
-                        </gco:CharacterString>
-                    </gmd:metadataStandardName>
+                        <!-- characterSet defaults to UTF-8 if no character set is specified -->
+                        <xsl:choose>
+                            <xsl:when test="$var_InputRootNode/gmd:characterSet">
+                                <xsl:copy-of select="$var_InputRootNode/gmd:characterSet"
+                                    copy-namespaces="no"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <gmd:characterSet>
+                                    <!--   <xsl:comment>no character set element in source metadata, USGIN XSLT inserted default value</xsl:comment>-->
+                                    <gmd:MD_CharacterSetCode
+                                        codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode "
+                                        codeListValue="utf8">UTF-8</gmd:MD_CharacterSetCode>
+                                </gmd:characterSet>
+                            </xsl:otherwise>
+                        </xsl:choose>
 
-                    <gmd:metadataStandardVersion>
-                        <gco:CharacterString>
-                            <xsl:value-of select="'1.2; ISO-USGIN'"/>
-                        </gco:CharacterString>
-                    </gmd:metadataStandardVersion>
+                        <!-- hierarchyLevel defaults to dataset -->
+                        <xsl:choose>
+                            <xsl:when test="$var_InputRootNode/gmd:hierarchyLevel">
+                                <xsl:copy-of select="$var_InputRootNode/gmd:hierarchyLevel"
+                                    copy-namespaces="no"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <gmd:hierarchyLevel>
+                                    <!--    <xsl:comment>no hierarchyLevel in source metadata, USGIN XSLT inserted default value</xsl:comment> -->
+                                    <gmd:MD_ScopeCode
+                                        codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+                                        codeListValue="Dataset">dataset</gmd:MD_ScopeCode>
+                                </gmd:hierarchyLevel>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <!-- copy hierarchyLevelName -->
+                        <xsl:choose>
+                            <xsl:when test="$var_InputRootNode/gmd:hierarchyLevelName">
+                                <xsl:copy-of select="$var_InputRootNode/gmd:hierarchyLevelName"
+                                    copy-namespaces="no"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <gmd:hierarchyLevelName>
+                                    <!--    <xsl:comment>no hierarchyLevelName in source metadata, USGIN XSLT inserted default value</xsl:comment> -->
+                                    <gco:CharacterString>missing</gco:CharacterString>
+                                </gmd:hierarchyLevelName>
+                            </xsl:otherwise>
+                        </xsl:choose>
 
-                    <!--                   <gmd:dataSetURI>
+                        <!--        <xsl:apply-templates select="$var_InputRootNode/gmd:contact"/>  -->
+                        <!--use for multiple contact-->
+                        <xsl:for-each select="$var_InputRootNode/gmd:contact">
+                            <xsl:choose>
+                                <xsl:when test="not(@gco:nilReason)">
+                                    <gmd:contact>
+                                        <xsl:call-template name="usgin:ResponsibleParty">
+                                            <xsl:with-param name="inputParty"
+                                                select="gmd:CI_ResponsibleParty"/>
+                                            <xsl:with-param name="defaultRole">
+                                                <gmd:role>
+                                                  <gmd:CI_RoleCode
+                                                  codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                                  codeListValue="pointOfContact"
+                                                  >pointOfContact</gmd:CI_RoleCode>
+                                                </gmd:role>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
+
+                                    </gmd:contact>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <gmd:contact gco:nilReason="missing"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:for-each>
+                        <gmd:dateStamp>
+                            <gco:DateTime>
+                                <xsl:call-template name="usgin:dateFormat">
+                                    <xsl:with-param name="inputDate"
+                                        select="$var_InputRootNode/gmd:dateStamp"/>
+                                </xsl:call-template>
+                            </gco:DateTime>
+                        </gmd:dateStamp>
+
+                        <gmd:metadataStandardName>
+                            <gco:CharacterString>
+                                <xsl:value-of select="'ISO 19115:2003/19139'"/>
+                            </gco:CharacterString>
+                        </gmd:metadataStandardName>
+
+                        <gmd:metadataStandardVersion>
+                            <gco:CharacterString>
+                                <xsl:value-of select="'1.2; ISO-USGIN'"/>
+                            </gco:CharacterString>
+                        </gmd:metadataStandardVersion>
+
+                        <!--                   <gmd:dataSetURI>
                         <gco:CharacterString>
                             <xsl:choose>
                                 <xsl:when test="$var_InputRootNode/gmd:datasetURI/gco:CharacterString">
@@ -217,101 +220,103 @@
                         </gco:CharacterString>
                     </gmd:dataSetURI>
   -->
-                    <xsl:copy-of select="$var_InputRootNode/gmd:locale" copy-namespaces="no"/>
-                    <xsl:copy-of select="$var_InputRootNode/gmd:spatialRepresentationInfo"
-                        copy-namespaces="no"/>
-                    <xsl:copy-of select="$var_InputRootNode/gmd:referenceSystemInfo"
-                        copy-namespaces="no"/>
-                    <!-- there may be multiple identificationInfo elements. Several metadata profiles put service distribution
+                        <xsl:copy-of select="$var_InputRootNode/gmd:locale" copy-namespaces="no"/>
+                        <xsl:copy-of select="$var_InputRootNode/gmd:spatialRepresentationInfo"
+                            copy-namespaces="no"/>
+                        <xsl:copy-of select="$var_InputRootNode/gmd:referenceSystemInfo"
+                            copy-namespaces="no"/>
+                        <!-- there may be multiple identificationInfo elements. Several metadata profiles put service distribution
                 information in sv_serviceIdentification elements in the same records as MD_DataIdentification
               The USGIN profile used MD_DataIdentification and puts service-based distribution information in 
               the distributionInformation section.  If there are multiple MD_DataIdentification elements, only
               the first will be processed. SV_ServiceIdentification elements will be parsed in the distributionInfo
             template -->
-                    <xsl:call-template name="usgin:identificationSection">
-                        <xsl:with-param name="inputInfo"
-                            select="$var_InputRootNode/gmd:identificationInfo/gmd:MD_DataIdentification[1]"
-                        />
-                    </xsl:call-template>
+                        <xsl:call-template name="usgin:identificationSection">
+                            <xsl:with-param name="inputInfo"
+                                select="$var_InputRootNode/gmd:identificationInfo/gmd:MD_DataIdentification[1]"
+                            />
+                        </xsl:call-template>
 
 
-                    <xsl:call-template name="usgin:distributionSection">
-                        <xsl:with-param name="inputDistro"
-                            select="$var_InputRootNode/gmd:distributionInfo"/>
-                    </xsl:call-template>
-                    
-                    <!-- don't copy dataquality sections with no useful content. this test is very specific 
+                        <xsl:call-template name="usgin:distributionSection">
+                            <xsl:with-param name="inputDistro"
+                                select="$var_InputRootNode/gmd:distributionInfo"/>
+                        </xsl:call-template>
+
+                        <!-- don't copy dataquality sections with no useful content. this test is very specific 
                     to what the GCMS ISO service generates, pretty brittle...-->
-                    <xsl:if test="not(count($var_InputRootNode/gmd:dataQualityInfo/descendant::node()/text()[string-length(normalize-space(.))>0])=2)
-                        and not($var_InputRootNode/gmd:dataQualityInfo/descendant::node()/text()[string-length(normalize-space(.))>0][1]='series')
-                        and not($var_InputRootNode/gmd:dataQualityInfo/descendant::node()/text()[string-length(normalize-space(.))>0][2]='PrecisionOfSeconds')">
-                    <xsl:copy-of select="$var_InputRootNode/gmd:dataQualityInfo"
-                        copy-namespaces="no"/>
-                    </xsl:if>
-                    <xsl:copy-of select="$var_InputRootNode/gmd:portrayalCatalogueInfo"
-                        copy-namespaces="no"/>
-                    <xsl:copy-of select="$var_InputRootNode/gmd:metadataConstraints"
-                        copy-namespaces="no"/>
-                    <xsl:copy-of select="$var_InputRootNode/gmd:applicationSchemaInfo"
-                        copy-namespaces="no"/>
-                    <!--           <xsl:for-each select="$var_InputRootNode/gmd:metadataMaintenance">  -->
-                    <gmd:metadataMaintenance>
-                        <gmd:MD_MaintenanceInformation>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency">
-                                    <xsl:copy-of
-                                        select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency"
-                                        copy-namespaces="no"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <gmd:maintenanceAndUpdateFrequency>
-                                        <!--no update frequency in source metadata, USGIN XSLT inserted 'irregular' as a default -->
-                                        <gmd:MD_MaintenanceFrequencyCode
-                                            codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode"
-                                            codeListValue="IRREGULAR">irregular
-                                        </gmd:MD_MaintenanceFrequencyCode>
-                                    </gmd:maintenanceAndUpdateFrequency>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            <xsl:copy-of
-                                select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:dateOfNextUpdate"
+                        <xsl:if
+                            test="
+                                not(count($var_InputRootNode/gmd:dataQualityInfo/descendant::node()/text()[string-length(normalize-space(.)) > 0]) = 2)
+                                and not($var_InputRootNode/gmd:dataQualityInfo/descendant::node()/text()[string-length(normalize-space(.)) > 0][1] = 'series')
+                                and not($var_InputRootNode/gmd:dataQualityInfo/descendant::node()/text()[string-length(normalize-space(.)) > 0][2] = 'PrecisionOfSeconds')">
+                            <xsl:copy-of select="$var_InputRootNode/gmd:dataQualityInfo"
                                 copy-namespaces="no"/>
-                            <xsl:copy-of
-                                select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:userDefinedMaintenanceFrequency"
-                                copy-namespaces="no"/>
-                            <xsl:copy-of
-                                select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:updateScope"
-                                copy-namespaces="no"/>
-                            <xsl:copy-of
-                                select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:updateScopeDescription"
-                                copy-namespaces="no"/>
-                            <xsl:copy-of
-                                select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceNote"
-                                copy-namespaces="no"/>
-                            <!-- add a note that the record has been processed by this xslt -->
-                            <gmd:maintenanceNote>
-                                <gco:CharacterString>
-                                    <xsl:value-of
-                                        select="concat($metadataMaintenanceNote, '2013-04-04T12:00:00')"
-                                    />
-                                </gco:CharacterString>
-                            </gmd:maintenanceNote>
-                            <xsl:copy-of
-                                select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:contact"
-                                copy-namespaces="no"/>
-                        </gmd:MD_MaintenanceInformation>
-                    </gmd:metadataMaintenance>
-                    <!--            </xsl:for-each>  -->
-                </gmd:MD_Metadata>
+                        </xsl:if>
+                        <xsl:copy-of select="$var_InputRootNode/gmd:portrayalCatalogueInfo"
+                            copy-namespaces="no"/>
+                        <xsl:copy-of select="$var_InputRootNode/gmd:metadataConstraints"
+                            copy-namespaces="no"/>
+                        <xsl:copy-of select="$var_InputRootNode/gmd:applicationSchemaInfo"
+                            copy-namespaces="no"/>
+                        <!--           <xsl:for-each select="$var_InputRootNode/gmd:metadataMaintenance">  -->
+                        <gmd:metadataMaintenance>
+                            <gmd:MD_MaintenanceInformation>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency">
+                                        <xsl:copy-of
+                                            select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency"
+                                            copy-namespaces="no"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <gmd:maintenanceAndUpdateFrequency>
+                                            <!--no update frequency in source metadata, USGIN XSLT inserted 'irregular' as a default -->
+                                            <gmd:MD_MaintenanceFrequencyCode
+                                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode"
+                                                codeListValue="IRREGULAR">irregular
+                                            </gmd:MD_MaintenanceFrequencyCode>
+                                        </gmd:maintenanceAndUpdateFrequency>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <xsl:copy-of
+                                    select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:dateOfNextUpdate"
+                                    copy-namespaces="no"/>
+                                <xsl:copy-of
+                                    select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:userDefinedMaintenanceFrequency"
+                                    copy-namespaces="no"/>
+                                <xsl:copy-of
+                                    select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:updateScope"
+                                    copy-namespaces="no"/>
+                                <xsl:copy-of
+                                    select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:updateScopeDescription"
+                                    copy-namespaces="no"/>
+                                <xsl:copy-of
+                                    select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceNote"
+                                    copy-namespaces="no"/>
+                                <!-- add a note that the record has been processed by this xslt -->
+                                <gmd:maintenanceNote>
+                                    <gco:CharacterString>
+                                        <xsl:value-of
+                                            select="concat($metadataMaintenanceNote, '2017-09-23T12:00:00')"
+                                        />
+                                    </gco:CharacterString>
+                                </gmd:maintenanceNote>
+                                <xsl:copy-of
+                                    select="$var_InputRootNode/gmd:metadataMaintenance/gmd:MD_MaintenanceInformation/gmd:contact"
+                                    copy-namespaces="no"/>
+                            </gmd:MD_MaintenanceInformation>
+                        </gmd:metadataMaintenance>
+                        <!--            </xsl:for-each>  -->
+                    </gmd:MD_Metadata>
 
-                <!-- <xsl:copy>
+                    <!-- <xsl:copy>
                     <xsl:apply-templates select="@* | node()"/>
                 </xsl:copy>
                -->
-                <!--                <xsl:copy-of select="."/>-->
-            </xsl:result-document>
-        </xsl:for-each>
+                    <!--                <xsl:copy-of select="."/>-->
+                </xsl:result-document>
+            </xsl:for-each>
         </xsl:for-each>
     </xsl:template>
 
@@ -327,29 +332,42 @@
         <xsl:param name="inputParty" select="."/>
         <xsl:param name="defaultRole" select="."/>
         <gmd:CI_ResponsibleParty>
-            <gmd:individualName>
-                <gco:CharacterString>
-                    <xsl:choose>
-                        <xsl:when test="$inputParty/gmd:individualName/gco:CharacterString">
+
+                <xsl:if
+                    test="$inputParty/gmd:individualName/gco:CharacterString
+                        and string-length(normalize-space($inputParty/gmd:individualName/gco:CharacterString)) > 0">
+                    <gmd:individualName>
+                        <gco:CharacterString>
                             <xsl:value-of
                                 select="$inputParty/gmd:individualName/gco:CharacterString"/>
-                        </xsl:when>
-                        <xsl:otherwise>missing</xsl:otherwise>
-                    </xsl:choose>
-                </gco:CharacterString>
-            </gmd:individualName>
-            <gmd:organisationName>
-                <gco:CharacterString>
-                    <xsl:choose>
-                        <xsl:when test="$inputParty/gmd:organisationName/gco:CharacterString">
+                        </gco:CharacterString>
+                    </gmd:individualName>
+                </xsl:if>
+                <xsl:if test="$inputParty/gmd:organisationName/gco:CharacterString
+                    and string-length(normalize-space($inputParty/gmd:organisationName/gco:CharacterString))>0">
+                    <gmd:organisationName>
+                        <gco:CharacterString>
                             <xsl:value-of
                                 select="$inputParty/gmd:organisationName/gco:CharacterString"/>
-                        </xsl:when>
-                        <xsl:otherwise>missing</xsl:otherwise>
-                    </xsl:choose>
-                </gco:CharacterString>
+                        </gco:CharacterString>
+                    </gmd:organisationName>
+                </xsl:if>
+                <xsl:if test="not(
+                    ($inputParty/gmd:individualName/gco:CharacterString
+                    and string-length(normalize-space($inputParty/gmd:individualName/gco:CharacterString)) > 0)
+                    or
+                    ($inputParty/gmd:organisationName/gco:CharacterString
+                    and string-length(normalize-space($inputParty/gmd:organisationName/gco:CharacterString))>0)
+                    )">
+                        <gmd:individualName>
+                            <gco:CharacterString>
+                                <xsl:value-of select="string('missing')"/>
+                            </gco:CharacterString>
+                        </gmd:individualName>              
+                </xsl:if>
+            
 
-            </gmd:organisationName>
+  
             <xsl:copy-of select="$inputParty/gmd:positionName" copy-namespaces="no"/>
             <gmd:contactInfo>
                 <gmd:CI_Contact>
@@ -625,6 +643,7 @@
          <xsl:copy-of select="$inputInfo/gmd:resourceFormat" copy-namespaces="no"/>  -->
 
                 <xsl:copy-of select="$inputInfo/gmd:descriptiveKeywords" copy-namespaces="no"/>
+                <!-- this next section for random keyword cleanup if necessary -->
                 <xsl:choose>
                     <xsl:when
                         test="not(//gmd:geographicElement) and not(//gmd:MD_KeywordTypeCode[@codeListValue = 'place'])">
@@ -642,10 +661,11 @@
                             </gmd:MD_Keywords>
                         </gmd:descriptiveKeywords>
                     </xsl:when>
-                    <xsl:otherwise>
+                    <!-- this is unnecessary -->
+<!--                    <xsl:otherwise>
                         <xsl:if
                             test="not($inputInfo/gmd:descriptiveKeywords/gmd:MD_Keyword/gmd:keyword/gco:CharacterString)">
-                            <!--At least one keyword is required -->
+                            <!-\-At least one keyword is required -\->
                             <gmd:descriptiveKeywords>
                                 <gmd:MD_Keywords>
                                     <gmd:keyword>
@@ -654,7 +674,7 @@
                                 </gmd:MD_Keywords>
                             </gmd:descriptiveKeywords>
                         </xsl:if>
-                    </xsl:otherwise>
+                    </xsl:otherwise>-->
                 </xsl:choose>
 
                 <xsl:copy-of select="$inputInfo/gmd:resourceSpecificUsage" copy-namespaces="no"/>
@@ -758,27 +778,27 @@
                                             <gmd:EX_VerticalExtent>
                                                 <xsl:choose>
                                                   <xsl:when test="string(number($minimumM)) = 'NaN'">
-                                                    <gmd:minimumValue gco:nilReason="missing"/>
+                                                  <gmd:minimumValue gco:nilReason="missing"/>
                                                   </xsl:when>
                                                   <xsl:otherwise>
-                                                    <gmd:minimumValue>
-                                                        <gco:Real>
-                                                            <xsl:value-of select="$minimumM"/>
-                                                        </gco:Real>
-                                                    </gmd:minimumValue>
+                                                  <gmd:minimumValue>
+                                                  <gco:Real>
+                                                  <xsl:value-of select="$minimumM"/>
+                                                  </gco:Real>
+                                                  </gmd:minimumValue>
                                                   </xsl:otherwise>
                                                 </xsl:choose>
                                                 <xsl:choose>
-                                                    <xsl:when test="string(number($maximumM)) = 'NaN'">
-                                                        <gmd:maximumValue gco:nilReason="missing"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                <gmd:maximumValue>
+                                                  <xsl:when test="string(number($maximumM)) = 'NaN'">
+                                                  <gmd:maximumValue gco:nilReason="missing"/>
+                                                  </xsl:when>
+                                                  <xsl:otherwise>
+                                                  <gmd:maximumValue>
                                                   <gco:Real>
                                                   <xsl:value-of select="$maximumM"/>
                                                   </gco:Real>
-                                                </gmd:maximumValue>
-                                                    </xsl:otherwise>
+                                                  </gmd:maximumValue>
+                                                  </xsl:otherwise>
                                                 </xsl:choose>
                                                 <gmd:verticalCRS>
                                                   <xsl:choose>
@@ -859,28 +879,28 @@
                                         <gmd:verticalElement>
                                             <gmd:EX_VerticalExtent>
                                                 <xsl:choose>
-                                                    <xsl:when test="string(number($minimumM)) = 'NaN'">
-                                                        <gmd:minimumValue gco:nilReason="missing"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <gmd:minimumValue>
-                                                            <gco:Real>
-                                                                <xsl:value-of select="$minimumM"/>
-                                                            </gco:Real>
-                                                        </gmd:minimumValue>
-                                                    </xsl:otherwise>
+                                                  <xsl:when test="string(number($minimumM)) = 'NaN'">
+                                                  <gmd:minimumValue gco:nilReason="missing"/>
+                                                  </xsl:when>
+                                                  <xsl:otherwise>
+                                                  <gmd:minimumValue>
+                                                  <gco:Real>
+                                                  <xsl:value-of select="$minimumM"/>
+                                                  </gco:Real>
+                                                  </gmd:minimumValue>
+                                                  </xsl:otherwise>
                                                 </xsl:choose>
                                                 <xsl:choose>
-                                                    <xsl:when test="string(number($maximumM)) = 'NaN'">
-                                                        <gmd:maximumValue gco:nilReason="missing"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <gmd:maximumValue>
-                                                            <gco:Real>
-                                                                <xsl:value-of select="$maximumM"/>
-                                                            </gco:Real>
-                                                        </gmd:maximumValue>
-                                                    </xsl:otherwise>
+                                                  <xsl:when test="string(number($maximumM)) = 'NaN'">
+                                                  <gmd:maximumValue gco:nilReason="missing"/>
+                                                  </xsl:when>
+                                                  <xsl:otherwise>
+                                                  <gmd:maximumValue>
+                                                  <gco:Real>
+                                                  <xsl:value-of select="$maximumM"/>
+                                                  </gco:Real>
+                                                  </gmd:maximumValue>
+                                                  </xsl:otherwise>
                                                 </xsl:choose>
                                                 <gmd:verticalCRS>
                                                   <xsl:choose>
@@ -988,45 +1008,50 @@
 
                 <xsl:for-each select="$inputDistro/gmd:MD_Distribution/gmd:distributor">
                     <!-- verify that there's some useful content here... -->
-                    <xsl:if test="gmd:MD_Distributor/gmd:distributionOrderProcess
-                        or gmd:MD_Distributor/gmd:distributorFormat
-                        or gmd:MD_Distributor/gmd:distributorTransferOptions//gmd:URL
-                        or (gmd:MD_Distributor/gmd:distributorContact and not(gmd:MD_Distributor/gmd:distributorContact/@gco:nilReason)) ">
-                    <gmd:distributor>
-                        <!-- check: may need to check for ID's on distributors used to bind transfer options
+                    <xsl:if
+                        test="
+                            gmd:MD_Distributor/gmd:distributionOrderProcess
+                            or gmd:MD_Distributor/gmd:distributorFormat
+                            or gmd:MD_Distributor/gmd:distributorTransferOptions//gmd:URL
+                            or (gmd:MD_Distributor/gmd:distributorContact and not(gmd:MD_Distributor/gmd:distributorContact/@gco:nilReason))">
+                        <gmd:distributor>
+                            <!-- check: may need to check for ID's on distributors used to bind transfer options
                         to distributors if there are multiple distributors and transfer options -->
-                        <gmd:MD_Distributor>
-                            <xsl:choose>
-                                <xsl:when test="not(gmd:MD_Distributor/gmd:distributorContact/@gco:nilReason)">
-                            <gmd:distributorContact>
-                                <xsl:call-template name="usgin:ResponsibleParty">
-                                    <xsl:with-param name="inputParty"
-                                        select="gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty"/>
-                                    <xsl:with-param name="defaultRole">
-                                        <gmd:role>
-                                            <gmd:CI_RoleCode
-                                                codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                                codeListValue="distributor"
-                                                >distributor</gmd:CI_RoleCode>
-                                        </gmd:role>
-                                    </xsl:with-param>
-                                </xsl:call-template>
+                            <gmd:MD_Distributor>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="not(gmd:MD_Distributor/gmd:distributorContact/@gco:nilReason)">
+                                        <gmd:distributorContact>
+                                            <xsl:call-template name="usgin:ResponsibleParty">
+                                                <xsl:with-param name="inputParty"
+                                                  select="gmd:MD_Distributor/gmd:distributorContact/gmd:CI_ResponsibleParty"/>
+                                                <xsl:with-param name="defaultRole">
+                                                  <gmd:role>
+                                                  <gmd:CI_RoleCode
+                                                  codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                                  codeListValue="distributor"
+                                                  >distributor</gmd:CI_RoleCode>
+                                                  </gmd:role>
+                                                </xsl:with-param>
+                                            </xsl:call-template>
 
 
-                            </gmd:distributorContact>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <gmd:distributorContact gco:nilReason="missing"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            <xsl:copy-of select="gmd:MD_Distributor/gmd:distributionOrderProcess"
-                                copy-namespaces="no"/>
-                            <xsl:copy-of select="gmd:MD_Distributor/gmd:distributorFormat"
-                                copy-namespaces="no"/>
-                            <xsl:copy-of select="gmd:MD_Distributor/gmd:distributorTransferOptions"
-                                copy-namespaces="no"/>
-                        </gmd:MD_Distributor>
-                    </gmd:distributor>
+                                        </gmd:distributorContact>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <gmd:distributorContact gco:nilReason="missing"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <xsl:copy-of
+                                    select="gmd:MD_Distributor/gmd:distributionOrderProcess"
+                                    copy-namespaces="no"/>
+                                <xsl:copy-of select="gmd:MD_Distributor/gmd:distributorFormat"
+                                    copy-namespaces="no"/>
+                                <xsl:copy-of
+                                    select="gmd:MD_Distributor/gmd:distributorTransferOptions"
+                                    copy-namespaces="no"/>
+                            </gmd:MD_Distributor>
+                        </gmd:distributor>
                     </xsl:if>
                 </xsl:for-each>
                 <!-- end of iteration over distributors -->
@@ -1070,13 +1095,15 @@
                                             <gmd:description>
                                                 <gco:CharacterString>
                                                   <xsl:value-of
-                                                  select="normalize-space(gmd:description/gco:CharacterString)"/>
+                                                  select="normalize-space(gmd:description/gco:CharacterString)"
+                                                  />
                                                 </gco:CharacterString>
                                             </gmd:description>
                                             <gmd:function>
                                                 <gmd:CI_OnLineFunctionCode
                                                   codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
-                                                  codeListValue="information">PROJECT HOME PAGE</gmd:CI_OnLineFunctionCode>
+                                                  codeListValue="information">PROJECT HOME
+                                                  PAGE</gmd:CI_OnLineFunctionCode>
                                             </gmd:function>
                                         </gmd:CI_OnlineResource>
                                     </gmd:onLine>
@@ -1104,13 +1131,15 @@
                                             <gmd:description>
                                                 <gco:CharacterString>
                                                   <xsl:value-of
-                                                  select="normalize-space(gmd:description/gco:CharacterString)"/>
+                                                  select="normalize-space(gmd:description/gco:CharacterString)"
+                                                  />
                                                 </gco:CharacterString>
                                             </gmd:description>
                                             <gmd:function>
                                                 <gmd:CI_OnLineFunctionCode
                                                   codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
-                                                  codeListValue="information">NSF Award information</gmd:CI_OnLineFunctionCode>
+                                                  codeListValue="information">NSF Award
+                                                  information</gmd:CI_OnLineFunctionCode>
                                             </gmd:function>
                                         </gmd:CI_OnlineResource>
                                     </gmd:onLine>
@@ -1197,7 +1226,8 @@
                 />
             </xsl:when>
             <xsl:when test="$inputDate/gco:DateTime">
-                <xsl:choose>
+                <xsl:value-of select="$inputDate/gco:DateTime"/>
+                <!--<xsl:choose>
                     <xsl:when test="count(normalize-space(string($inputDate/gco:DateTime))) = 18">
                         <xsl:value-of select="$inputDate/gco:DateTime"/>
                     </xsl:when>
@@ -1215,7 +1245,7 @@
                     <xsl:otherwise>
                         <xsl:value-of select="string('1900-01-01T12:00:00Z')"/>
                     </xsl:otherwise>
-                </xsl:choose>
+                </xsl:choose>-->
             </xsl:when>
             <!-- end of gco:dateTime handler -->
             <xsl:otherwise>
@@ -1294,7 +1324,7 @@
                                 <xsl:when
                                     test=".//gmd:associationType/gmd:DS_AssociationTypeCode/@codeListValue">
                                     <xsl:copy-of
-                                        select=".//gmd:associationType/gmd:DS_AssociationTypeCode"/>
+                                        select=".//gmd:associationType/gmd:DS_AssociationTypeCode" copy-namespaces="no"/>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <gmd:DS_AssociationTypeCode
