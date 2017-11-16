@@ -21,6 +21,8 @@ write the dataCite metadata files to that location.
 updates:
 2017-03-30 SMR added more header information; put the main loop process in
     a try/except block
+2017-10-17 SMR change to specify input and output in the code,
+    *** don't forget that the first row is expcetect to be column headings! ***
 """
 
 import sys
@@ -31,26 +33,30 @@ import xml.etree.ElementTree as ET
 
 XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 ns = "{http://datacite.org/schema/kernel-4}"
-# get the dump_file and output_dir from the input arguements
-dump_file = None
-output_dir = None
+# set the dump_file and output_dir, to run code inside ide
+dump_file = 'C:\Users\Stephen Richard\Google Drive\IEDA\Systems\EarthChem\EarthChemLibrary\DataCiteMetadata\ECLDataCiteDbDump.txt'
+output_dir = 'C:\Users\Stephen Richard\Google Drive\IEDA\Systems\EarthChem\EarthChemLibrary\DataCiteMetadata\DataCiteRecords'
 
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "hd:o:", ["dump_file=", "output_dir="])
-    if len(opts) == 0:
-        print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
-        sys.exit(0)
-except getopt.GetoptError:
-    print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
-    sys.exit(0)
-for opt, arg in opts:
-    if opt == '-h':
-        print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
-        sys.exit(0)
-    elif opt in ('-d', '--dump_file'):
-        dump_file = arg
-    elif opt in ('-o', '--output_dir'):
-        output_dir = arg
+# use this to set the dump_file and output_dir from the input arguments
+##try:
+##    opts, args = getopt.getopt(sys.argv[1:], "hd:o:", ["dump_file=", "output_dir="])
+##    if len(opts) == 0:
+##        print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
+##        sys.exit(0)
+##except getopt.GetoptError:
+##    print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
+##    sys.exit(0)
+##
+##    
+##for opt, arg in opts:
+##    if opt == '-h':
+##        print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
+##        sys.exit(0)
+##    elif opt in ('-d', '--dump_file'):
+##        dump_file = arg
+##    elif opt in ('-o', '--output_dir'):
+##        output_dir = arg
+
 if dump_file is None or output_dir is None:
         print("grl_dump2meta.py -d <dump_file> -o <output_dir>")
         sys.exit(0)
@@ -68,7 +74,7 @@ if not os.path.exists:
 submissions = {}
 try:
     with open(dump_file, 'rt') as f:
-        reader = csv.reader(f, delimiter='|')
+        reader = csv.reader(f, delimiter='^')
         header = True
         for row in reader:
             # skip header line
