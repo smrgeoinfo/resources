@@ -1199,16 +1199,18 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                     <gmd:address>
                         <gmd:CI_Address>
                             <gmd:electronicMailAddress>
-                                <gco:CharacterString>
-                                    <xsl:choose>
+                                <xsl:choose>
                                         <xsl:when test="$email != ''">
+                                            <gco:CharacterString>
                                             <xsl:value-of select="$email"/>
+                                            </gco:CharacterString>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:value-of select="string('missing@unknown.org')"/>
+                                            <xsl:attribute name="gco:nilReason">
+                                                <xsl:value-of select="string('missing')"/>
+                                            </xsl:attribute>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                </gco:CharacterString>
                             </gmd:electronicMailAddress>
                         </gmd:CI_Address>
                     </gmd:address>
@@ -1249,9 +1251,10 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
 
     <!-- SMR version for v4: retrieves spatial coverage - currently only boxes/points/descriptions -->
     <xsl:template name="spatialcoverage">
-        <xsl:for-each select="//*[local-name() = 'geoLocations']/*[local-name() = 'geoLocation']">
+
             <gmd:extent>
                 <gmd:EX_Extent>
+        <xsl:for-each select="//*[local-name() = 'geoLocations']/*[local-name() = 'geoLocation']">
                     <xsl:if
                         test="
                             count(*[local-name() = 'geoLocationPlace']) &gt; 0 and
@@ -1342,9 +1345,23 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                     test="
                                         count($thebox/*[local-name() = 'westBoundLongitude']) &gt; 0 and
                                         string($thebox/*[local-name() = 'westBoundLongitude']) != ''">
-                                    <xsl:value-of
-                                        select="number($thebox/*[local-name() = 'westBoundLongitude'])"
-                                    />
+                                    <xsl:choose>
+                                        <xsl:when test="(number($thebox/*[local-name() = 'westBoundLongitude']) &lt; -180)">
+                                            <xsl:value-of
+                                                select="number($thebox/*[local-name() = 'westBoundLongitude'])+360"
+                                            />
+                                        </xsl:when>
+                                        <xsl:when test="(number($thebox/*[local-name() = 'westBoundLongitude']) &gt; 180)">
+                                            <xsl:value-of
+                                                select="number($thebox/*[local-name() = 'westBoundLongitude'])-360"
+                                            />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of
+                                                select="number($thebox/*[local-name() = 'westBoundLongitude'])"
+                                            />
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:value-of select="''"/>
@@ -1372,9 +1389,23 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                     test="
                                         count($thebox/*[local-name() = 'eastBoundLongitude']) &gt; 0 and
                                         string($thebox/*[local-name() = 'eastBoundLongitude']) != ''">
-                                    <xsl:value-of
-                                        select="number($thebox/*[local-name() = 'eastBoundLongitude'])"
-                                    />
+                                    <xsl:choose>
+                                        <xsl:when test="(number($thebox/*[local-name() = 'eastBoundLongitude']) &lt; -180)">
+                                            <xsl:value-of
+                                                select="number($thebox/*[local-name() = 'eastBoundLongitude'])+360"
+                                            />
+                                        </xsl:when>
+                                        <xsl:when test="(number($thebox/*[local-name() = 'eastBoundLongitude']) &gt; 180)">
+                                            <xsl:value-of
+                                                select="number($thebox/*[local-name() = 'eastBoundLongitude'])-360"
+                                            />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of
+                                                select="number($thebox/*[local-name() = 'eastBoundLongitude'])"
+                                            />
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:value-of select="''"/>
@@ -1406,33 +1437,114 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                         </gmd:EX_BoundingPolygon>
                                     </gmd:geographicElement>
                                 </xsl:when>
+<!-- check to see if box crosses 180 with west side either in east long (positive) or <-180, or east side  
+                            >180. If so, create two bounding box geographicElements-->
+                                <xsl:when test="($wLong &gt;0 and $eLong &lt;0)">
+                              <!-- use east longitude coordinates -->
+                                    <gmd:geographicElement>
+                                        <gmd:EX_GeographicBoundingBox>
+                                            <gmd:westBoundLongitude>
+                                                <gco:Decimal>
+                                                    <xsl:value-of select="$wLong"/>
+                                                </gco:Decimal>
+                                            </gmd:westBoundLongitude>
+                                            <gmd:eastBoundLongitude>
+                                                <gco:Decimal>
+                                                     <xsl:value-of select="180"/>
+                                                </gco:Decimal>
+                                            </gmd:eastBoundLongitude>
+                                            <gmd:southBoundLatitude>
+                                                <gco:Decimal>
+                                                    <xsl:choose>
+                                                        <xsl:when test="number($sLat) &lt; number($nLat)">
+                                                            <xsl:value-of select="$sLat"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="$nLat"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </gco:Decimal>
+                                            </gmd:southBoundLatitude>
+                                            <gmd:northBoundLatitude>
+                                                <gco:Decimal>
+                                                    <xsl:choose>
+                                                        <xsl:when test="number($sLat) &lt; number($nLat)">
+                                                            <xsl:value-of select="$nLat"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="$sLat"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </gco:Decimal>
+                                            </gmd:northBoundLatitude>
+                                        </gmd:EX_GeographicBoundingBox>
+                                    </gmd:geographicElement>
+                                    <gmd:geographicElement>
+                                        <gmd:EX_GeographicBoundingBox>
+                                            <gmd:westBoundLongitude>
+                                                <gco:Decimal>
+                                                    <xsl:value-of select="-180"/>
+                                                </gco:Decimal>
+                                            </gmd:westBoundLongitude>
+                                            <gmd:eastBoundLongitude>
+                                                <gco:Decimal>
+                                                    <xsl:value-of select="$eLong"/>
+                                                </gco:Decimal>
+                                            </gmd:eastBoundLongitude>
+                                            <gmd:southBoundLatitude>
+                                                <gco:Decimal>
+                                                    <xsl:choose>
+                                                        <xsl:when test="number($sLat) &lt; number($nLat)">
+                                                            <xsl:value-of select="$sLat"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="$nLat"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </gco:Decimal>
+                                            </gmd:southBoundLatitude>
+                                            <gmd:northBoundLatitude>
+                                                <gco:Decimal>
+                                                    <xsl:choose>
+                                                        <xsl:when test="number($sLat) &lt; number($nLat)">
+                                                            <xsl:value-of select="$nLat"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="$sLat"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </gco:Decimal>
+                                            </gmd:northBoundLatitude>
+                                        </gmd:EX_GeographicBoundingBox>
+                                    </gmd:geographicElement>
+                               </xsl:when>
                                 <xsl:otherwise>
                                     <gmd:geographicElement>
                                         <gmd:EX_GeographicBoundingBox>
                                             <gmd:westBoundLongitude>
                                                 <gco:Decimal>
-                                                  <xsl:choose>
+                                                  <!--<xsl:choose>
                                                   <xsl:when
-                                                  test="number($wLong) &lt; number($eLong)">
+                                                  test="number($wLong) &lt; number($eLong)">-->
                                                   <xsl:value-of select="$wLong"/>
-                                                  </xsl:when>
+                                                  <!--</xsl:when>
                                                   <xsl:otherwise>
                                                   <xsl:value-of select="$eLong"/>
                                                   </xsl:otherwise>
-                                                  </xsl:choose>
+                                                  </xsl:choose>-->
                                                 </gco:Decimal>
                                             </gmd:westBoundLongitude>
                                             <gmd:eastBoundLongitude>
                                                 <gco:Decimal>
-                                                  <xsl:choose>
+                                                  <!--<xsl:choose>
                                                   <xsl:when
-                                                  test="number($wLong) &lt; number($eLong)">
+                                                  test="number($wLong) &lt; number($eLong)">-->
                                                   <xsl:value-of select="$eLong"/>
-                                                  </xsl:when>
+                                                  <!--</xsl:when>
                                                   <xsl:otherwise>
                                                   <xsl:value-of select="$wLong"/>
                                                   </xsl:otherwise>
-                                                  </xsl:choose>
+                                                  </xsl:choose>-->
                                                 </gco:Decimal>
                                             </gmd:eastBoundLongitude>
                                             <gmd:southBoundLatitude>
@@ -1465,10 +1577,10 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                             </xsl:choose>
                         </xsl:if>
                     </xsl:if>
-
+        </xsl:for-each>
                 </gmd:EX_Extent>
             </gmd:extent>
-        </xsl:for-each>
+
     </xsl:template>
 
     <!-- Damian Ulbricht for DataCite pre v4: retrieves spatial coverage - 
