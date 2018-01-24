@@ -692,7 +692,10 @@
                 </gmd:CI_Date>
             </gmd:date>
         </xsl:if>
-        <gmd:date>
+        
+        <xsl:choose>
+        <xsl:when test="string-length(//*[local-name() = 'publicationYear'])>0">
+            <gmd:date>
             <gmd:CI_Date>
                 <gmd:date>
                     <gco:Date>
@@ -706,6 +709,11 @@
                 </gmd:dateType>
             </gmd:CI_Date>
         </gmd:date>
+        </xsl:when>
+            <xsl:otherwise>
+                <gmd:date gco:nilReason="missing"/>
+            </xsl:otherwise>
+        </xsl:choose>
         <xsl:if
             test="
                 ($datacite-dates/*[local-name() = 'date' and @dateType = 'Updated'][1] != '')
@@ -1254,19 +1262,24 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
 
             <gmd:extent>
                 <gmd:EX_Extent>
-        <xsl:for-each select="//*[local-name() = 'geoLocations']/*[local-name() = 'geoLocation']">
-                    <xsl:if
-                        test="
-                            count(*[local-name() = 'geoLocationPlace']) &gt; 0 and
-                            normalize-space(*[local-name() = 'geoLocationPlace']) != ''">
+                    
+                    <xsl:if test="count(//*[local-name() = 'geoLocationPlace']) &gt; 0">
                         <gmd:description>
                             <gco:CharacterString>
-                                <xsl:value-of
-                                    select="normalize-space(*[local-name() = 'geoLocationPlace'])"/>
+                    <xsl:for-each select="//*[local-name() = 'geoLocationPlace']">
+                        <xsl:if test="normalize-space(text()) != ''">
+                             <xsl:value-of select="normalize-space(text())"/>
+                            
+                            <xsl:if test="following::*[local-name() = 'geoLocationPlace']">
+                                <xsl:text>; </xsl:text>
+                            </xsl:if>
+                        </xsl:if>
+                    </xsl:for-each>
                             </gco:CharacterString>
                         </gmd:description>
                     </xsl:if>
-
+        <xsl:for-each select="//*[local-name() = 'geoLocations']/*[local-name() = 'geoLocation']">
+                    
                     <xsl:if test="count(*[local-name() = 'geoLocationPoint']) &gt; 0">
                         <xsl:variable name="thepoint" select="*[local-name() = 'geoLocationPoint']"/>
 
