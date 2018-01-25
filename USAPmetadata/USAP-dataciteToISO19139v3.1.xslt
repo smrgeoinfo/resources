@@ -544,8 +544,8 @@
                                 </gmd:onLine>
                             </xsl:if>
                             <xsl:for-each
-                                select="//*[local-name() = 'alternateIdentifier' and @alternateIdentifierType = 'URL']">
-                                <xsl:if test=". != ''">
+                                select="//*[local-name() = 'alternateIdentifier'] ">
+                                <xsl:if test=". != '' and starts-with(normalize-space(string(.)), 'http')">
                                     <gmd:onLine>
                                         <gmd:CI_OnlineResource>
                                             <gmd:linkage>
@@ -557,12 +557,12 @@
                                                 <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
                                             </gmd:protocol>
                                             <gmd:name>
-                                                <gco:CharacterString>Landing
-                                                  Page</gco:CharacterString>
+                                                <gco:CharacterString>
+                                                    <xsl:value-of select="normalize-space(string(@alternateIdentifierType))"/>
+                                                </gco:CharacterString>
                                             </gmd:name>
                                             <gmd:description>
-                                                <gco:CharacterString>Link to a web page related to
-                                                  the resource.</gco:CharacterString>
+                                                <gco:CharacterString>Link to a web page related to the resource.</gco:CharacterString>
                                             </gmd:description>
                                             <gmd:function>
                                                 <gmd:CI_OnLineFunctionCode
@@ -1899,7 +1899,7 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                 </gmd:thesaurusName>
                             </xsl:when>
                             <xsl:when
-                                test="translate($theScheme, $uppercase, $smallcase) = 'ieda data type categories' ">
+                                test="contains(translate($theScheme, $uppercase, $smallcase),'ieda data type')">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
