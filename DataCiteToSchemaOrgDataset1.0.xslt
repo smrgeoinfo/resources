@@ -316,7 +316,7 @@
         <xsl:for-each select="//*[local-name() = 'subject']">
             <!-- extract one or more keywords from each keywordList element -->
             <xsl:text>"</xsl:text>
-            <xsl:value-of select="text()"/>
+            <xsl:value-of select="normalize-space(text())"/>
             <xsl:text>"</xsl:text>
             <xsl:if test="following::*[local-name() = 'subject']">
                 <xsl:text>, </xsl:text>
@@ -324,7 +324,7 @@
         </xsl:for-each>
         <xsl:variable name="subjectsString">
             <xsl:for-each select="//*[local-name() = 'subject']">
-                <xsl:value-of select="text()"/>
+                <xsl:value-of select="normalize-space(text())"/>
             </xsl:for-each>
         </xsl:variable>
         <!--        <xsl:if
@@ -336,7 +336,7 @@
         <xsl:for-each select="//*[local-name() = 'geoLocationPlace']">
             <xsl:if test="not(contains($subjectsString, text()))">
                 <xsl:text>,&#10;"</xsl:text>
-                <xsl:value-of select="text()"/>
+                <xsl:value-of select="normalize-space(text())"/>
                 <xsl:text>"</xsl:text>
                 <!--              <xsl:if test="following::*[local-name() = 'geoLocationPlace']">
                     <xsl:text>, </xsl:text>
@@ -490,7 +490,7 @@
             <!-- if there's a place name  -->
             <xsl:if test="$placeName and string-length($placeName) > 0">
                 <xsl:text>      "name": "</xsl:text>
-                <xsl:value-of select="$placeName"/>
+                <xsl:value-of select="normalize-space($placeName)"/>
                 <xsl:text>"</xsl:text>
                 <xsl:if
                     test="
@@ -717,7 +717,7 @@
                 <xsl:value-of select="$varDescription"/>
                 <xsl:text>",&#10;</xsl:text>
             </xsl:if>
-
+            
             <xsl:text>      "unitText": "</xsl:text>
             <xsl:value-of select="$varUnitsText"/>
             <xsl:text>",&#10;</xsl:text>
@@ -825,7 +825,7 @@
             <xsl:value-of select="//*[local-name() = 'identifier']"/>
         </xsl:variable>
         <xsl:variable name="name">
-            <xsl:value-of select="//*[local-name() = 'title' and not(@titleType)][1]"/>
+            <xsl:value-of select="normalize-space(//*[local-name() = 'title' and not(@titleType)][1])"/>
         </xsl:variable>
         <xsl:variable name="alternateName">
             <xsl:choose>
@@ -870,7 +870,7 @@
             <xsl:value-of select="//*[local-name() = 'publicationYear']"/>
             <xsl:text>), </xsl:text>
             <!-- will potentially have problems here if there are multiple titles; this just takes the first one -->
-            <xsl:value-of disable-output-escaping="yes" select="//*[local-name() = 'title'][1]"/>
+            <xsl:value-of disable-output-escaping="yes" select="normalize-space(//*[local-name() = 'title'][1])"/>
             <xsl:text>. </xsl:text>
             <xsl:value-of disable-output-escaping="yes"
                 select="normalize-space(string(//*[local-name() = 'publisher']))"/>
@@ -907,7 +907,7 @@
           <!-- make sure something is returned, description is required -->
             <xsl:choose>
                 <xsl:when test="string-length($seedDescription)>0">
-                    <xsl:value-of select="$seedDescription"/>
+                    <xsl:value-of select="normalize-space($seedDescription)"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="string($name)"/>
@@ -926,7 +926,7 @@
                 <xsl:when test="count(//*[local-name() = 'rights']) > 1">
                     <xsl:for-each select="//*[local-name() = 'rights']">
                         <xsl:text>"</xsl:text>
-                        <xsl:value-of select="text()"/>
+                        <xsl:value-of select="normalize-space(text())"/>
                         <xsl:text>"</xsl:text>
                         <xsl:if test="following-sibling::*[local-name() = 'rights']">
                             <xsl:text>,&#10;</xsl:text>
