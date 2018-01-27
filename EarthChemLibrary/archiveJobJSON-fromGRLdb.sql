@@ -1,5 +1,6 @@
-﻿--SQL query to generate a JSON archive job description to feed bulk archvie update process
---  for IEDA
+﻿--SQL query to generate a JSON archive job description to feed bulk archive update process
+--  for IEDA. The JSON files generated are used by the bagit and copy to archive process
+--  implemented by Neville Shane as a component of the ATP Data Submission Hub workflow.
 -- Stephen M. Richard
 --  2017-03-30
 

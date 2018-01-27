@@ -7,6 +7,9 @@
 
 -- Started on 2017-11-15 11:41:01
 
+-- this is a backup of the keyword table from the USAP-DC database
+-- before updates were made to the keyword schema and IEDA keywords added
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;

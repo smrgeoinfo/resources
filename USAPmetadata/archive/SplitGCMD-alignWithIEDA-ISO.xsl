@@ -35,11 +35,16 @@
             
             <xsl:variable name="filename"
                 select="concat(string(@concept-id), '.xml')"/>
+				
+				<!-- works with 19115 or 19115-2 -->
         <xsl:for-each select="//gmd:MD_Metadata | //gmi:MI_Metadata">
             <xsl:variable name="var_InputRootNode" select="."/>
 <!--            <xsl:variable name="filename"
                 select="concat(string(gmd:fileIdentifier/gco:CharacterString), '.xml')"/>-->
             <!--   <xsl:value-of select="$filename" />  Creating  -->
+			
+			<!-- ****************************************************************-->
+<!-- *************** SET THE OUTPUT filename and directory location HERE ********************** -->
             <xsl:result-document href="file:/C:/Users/Stephen%20Richard/Google%20Drive/IEDA/Systems/USAP/output2/{$filename}" format="xml">
 
                 <gmd:MD_Metadata xmlns:gco="http://www.isotc211.org/2005/gco"

@@ -7,6 +7,10 @@
 
 -- Started on 2017-11-15 11:39:54
 
+-- this is a backup of the dataset_keyword_map that was in the USAP-DC database
+-- before updating the keyword schema and adding IEDA keywords
+
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;

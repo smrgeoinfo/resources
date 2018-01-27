@@ -11,7 +11,8 @@
     In this instance, the container is a collection of records from GCMD harvested via the GCMD CSW.
     Processing includes relocating content from invalid elements added by NASA, and copying distribution information from the 
     aggreationInformation section to the distribution section where it is normally placed. vertical extents have been converted 
-    from encodeing using Geographic Identifier to gmd verticalExtent objects. 
+    from encoding using Geographic Identifier to gmd verticalExtent objects. 
+	NOTE: this transform used xslt v. 2.
     2017-09-07 SMR -->
 
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" name="xml"/>
@@ -32,7 +33,7 @@
         https://github.com/iedadata/resources. Vertical extent encoding moved from geographic 
         identifier to verticalExtent elements; extra > None strings in keyword paths removed; gml 
         3.2 namespace declaration changed to gml so records will validate. ISO19115-2 (gmi: 
-        namespace) elements have been ignored. The acquisition informaton in the NASA GCMD records 
+        namespace) elements have been ignored. The acquisition information in the NASA GCMD records 
         is duplicated in the keywords sections, and none of the records contained any 
         gmi:LE_Lineage elements. No other gmi content was found in the harvested record set.
         '"/>
