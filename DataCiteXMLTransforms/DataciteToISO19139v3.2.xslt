@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco"
     xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:datetime="http://exslt.org/dates-and-times" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    exclude-result-prefixes="datetime">
+    xmlns:datetime="http://exslt.org/dates-and-times"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="datetime">
 
     <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
     <!-- 
@@ -34,49 +34,102 @@
 	properly labeled groups. The standard codeListValues are used, and the IEDA facet nameis the element value
 	in the MD_KeywordTypeCode element.  Also add data center keyword.
 	-->
+    
+    <!-- SMR 2018-01-25 update to use for any IEDA DataCite. Have to insert logic to determine partner system source -->
+    
+    
     <!-- license: Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0.txt -->
 
-    <!-- this is used for the Data Centre keyword type -->
-    <xsl:variable name="datacentre" select="string('EarthChem Library (ECL)')"/>
-
+<!-- this is used for the Data Centre keyword type -->
+    <xsl:variable name="datacentre">
+        <xsl:choose>
+            <!-- USAP -->
+            <xsl:when test="//*[local-name()='alternateIdentifier' and contains(text(),'www.usap-dc.org')]">
+                <xsl:value-of select="string('US Antarctic Program Data Center (USAP-DC)')"/>
+            </xsl:when>
+            
+            <!-- ECL -->
+            <xsl:when test="//*[local-name()='alternateIdentifier' and contains(text(),'www.earthchem.org')]">
+                <xsl:value-of select="string('EarthChem Library (ECL)')"/>
+            </xsl:when>
+            <xsl:when test="//*[local-name()='alternateIdentifier' and contains(@alternateIdentifierType,'UTIG')]">
+                <xsl:value-of select="string('ASP@LDEO')"/>
+            </xsl:when>
+            
+            <xsl:when test="string-length(normalize-space(//*[local-name() = 'publisher'][1]))>0 and
+                normalize-space(//*[local-name() = 'publisher'][1]) != 'missing'">
+            <xsl:value-of select="normalize-space(//*[local-name() = 'publisher'][1])"/>
+        </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="string('Interdisciplinary Earth Data Alliance')"/>
+            </xsl:otherwise>
+ 
+        </xsl:choose>
+    </xsl:variable>
+    
     <!-- The contact for the metadata - static value; customize for your
-		application.  -->
+		application.  -->   
     <xsl:template name="metadatacontact">
         <gmd:contact>
             <gmd:CI_ResponsibleParty>
                 <gmd:organisationName>
-                    <gco:CharacterString>EarthChem Library (ECL) | Interdisciplinary Earth Data
-                        Alliance | Columbia University</gco:CharacterString>
+                    <gco:CharacterString>Interdisciplinary Earth Data Alliance</gco:CharacterString>
                 </gmd:organisationName>
                 <gmd:contactInfo>
                     <gmd:CI_Contact>
                         <gmd:address>
                             <gmd:CI_Address>
                                 <gmd:electronicMailAddress>
-                                    <gco:CharacterString>info@EarthChem.org</gco:CharacterString>
-                                    <!--<gco:CharacterString>web@usap-dc.org</gco:CharacterString>-->
+                                    <!--<gco:CharacterString>info@EarthChem.org</gco:CharacterString>-->
+                                    <gco:CharacterString>
+                                        <xsl:choose>
+                                            <xsl:when test="$datacentre='US Antarctic Program Data Center (USAP-DC)'"> 
+                                                <xsl:value-of select="string('web@usap-dc.org')"/>
+                                            </xsl:when>
+                                            <xsl:when test="$datacentre='EarthChem Library (ECL)'"> 
+                                                <xsl:value-of select="string('info@EarthChem.org')"/>
+                                            </xsl:when>
+                                            <xsl:when test="$datacentre='ASP@LDEO'">
+                                                <xsl:value-of select="string('info@marine-geo.org')"/>
+                                            </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="string('info@iedadata.org')"/>
+                                        </xsl:otherwise>
+                                        </xsl:choose>
+                                    </gco:CharacterString>
                                 </gmd:electronicMailAddress>
                             </gmd:CI_Address>
                         </gmd:address>
-                        <!--only allow one online resource; choose the logo...-->
+                        <!--  only allow one online resource; choose the logo...
+						<gmd:onlineResource>
+							<gmd:CI_OnlineResource>
+								<gmd:linkage>
+									<gmd:URL>http://www.earthchem.org/library</gmd:URL>
+								</gmd:linkage>
+								<gmd:function>
+									<gmd:CI_OnLineFunctionCode
+										codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
+										codeListValue="information"
+										>information</gmd:CI_OnLineFunctionCode>
+								</gmd:function>
+							</gmd:CI_OnlineResource>
+						</gmd:onlineResource>-->
                         <gmd:onlineResource>
                             <gmd:CI_OnlineResource>
                                 <gmd:linkage>
-                                    <gmd:URL>http://www.earthchem.org/library</gmd:URL>
-                                </gmd:linkage>
-                                <gmd:function>
-                                    <gmd:CI_OnLineFunctionCode
-                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
-                                        codeListValue="information"
-                                        >information</gmd:CI_OnLineFunctionCode>
-                                </gmd:function>
-                            </gmd:CI_OnlineResource>
-                        </gmd:onlineResource>
-                        <!--         <gmd:onlineResource>
-                            <gmd:CI_OnlineResource>
-                                <gmd:linkage>
-                                    <!-\-<gmd:URL>http://www.earthchem.org/sites/earthchem.org/files/arthemia_logo.jpg</gmd:URL>-\->
-                                    <gmd:URL>http://www.usap-dc.org/static/imgs/header/usaplogo.png</gmd:URL>
+                                    <gmd:URL>
+                                    <xsl:choose>
+                                        <xsl:when test="$datacentre='US Antarctic Program Data Center (USAP-DC)'"> 
+                                            <xsl:value-of select="string('http://www.usap-dc.org/static/imgs/header/usaplogo.png')"/>
+                                        </xsl:when>
+                                        <xsl:when test="$datacentre='EarthChem Library (ECL)'"> 
+                                            <xsl:value-of select="string('http://www.earthchem.org/sites/earthchem.org/files/arthemia_logo.jpg')"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="string('https://www.iedadata.org/wp-content/themes/IEDA/assets/img/logo.png')"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    </gmd:URL>
                                 </gmd:linkage>
                                 <gmd:function>
                                     <gmd:CI_OnLineFunctionCode
@@ -86,7 +139,6 @@
                                 </gmd:function>
                             </gmd:CI_OnlineResource>
                         </gmd:onlineResource>
-               -->
                     </gmd:CI_Contact>
                 </gmd:contactInfo>
                 <gmd:role>
@@ -97,8 +149,8 @@
             </gmd:CI_ResponsibleParty>
         </gmd:contact>
     </xsl:template>
-    <!-- SMR20171014 set up key for grouping dataCite Subject element with the same subject scheme -->
-    <xsl:key name="topic" match="//*[local-name() = 'subject']" use="@subjectScheme"/>
+<!-- SMR20171014 set up key for grouping dataCite Subject element with the same subject scheme -->
+    <xsl:key name="topic" match="//*[local-name()='subject']" use="@subjectScheme"/> 
 
     <!-- define variables for top level elements in DataCite xml to simplify xpaths... -->
     <xsl:variable name="datacite-identifier" select="//*[local-name() = 'identifier']"/>
@@ -107,16 +159,15 @@
     <xsl:variable name="datacite-contributors" select="//*[local-name() = 'contributors']"/>
     <xsl:variable name="datacite-creators" select="//*[local-name() = 'creators']"/>
     <xsl:variable name="datacite-dates" select="//*[local-name() = 'dates']"/>
-    <xsl:variable name="smallcase" select="'abcdefghijklmnopqrstuvwxyz'"/>
-    <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
+    <xsl:variable name="smallcase" select="'abcdefghijklmnopqrstuvwxyz'" />
+    <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
 
     <!-- these variables set content for gmd:metadataMaintenance element at the end of the record
 		recommend using these to report on how this record was created and by who. -->
     <xsl:variable name="metaMaintenanceNote"
         select="
-            string('This metadata record was generated by an xslt transformation 
-            from DataCite metadata records exported from the EarthChem Library database; 
-            The transform was created by Damian Ulbricht and Stephen M. Richard.')"/>
+            string('This metadata record was generated by an xslt transformation from a DataCite metadata record; The transform was
+ created by Damian Ulbricht and Stephen M. Richard. 2017-11-15 these records include new IEDA keywords for geoportal facets')"/>
     <xsl:variable name="maintenanceContactID"
         select="string('http://orcid.org/0000-0001-6041-5302')"/>
     <xsl:variable name="maintenanceContactName" select="string('Stephen M. Richard')"/>
@@ -473,7 +524,8 @@
                     <xsl:call-template name="versionandformat"/>
                     <xsl:call-template name="freekeywords"/>
                     <xsl:call-template name="thesauruskeywords"/>
-                    <!-- insert data center keyword; this is configured at the beginning of this xslt -->
+                    <xsl:call-template name="geolocationplace"/>
+ <!-- insert data center keyword; this is configured at the beginning of this xslt -->                   
                     <gmd:descriptiveKeywords>
                         <gmd:MD_Keywords>
                             <gmd:keyword>
@@ -488,8 +540,8 @@
                             </gmd:type>
                         </gmd:MD_Keywords>
                     </gmd:descriptiveKeywords>
-
-
+                    
+                    
                     <xsl:call-template name="license"/>
 
                     <xsl:call-template name="relatedResources">
@@ -577,8 +629,8 @@
                                 </gmd:onLine>
                             </xsl:if>
                             <xsl:for-each
-                                select="//*[local-name() = 'alternateIdentifier' and @alternateIdentifierType = 'URL']">
-                                <xsl:if test=". != ''">
+                                select="//*[local-name() = 'alternateIdentifier'] ">
+                                <xsl:if test=". != '' and starts-with(normalize-space(string(.)), 'http')">
                                     <gmd:onLine>
                                         <gmd:CI_OnlineResource>
                                             <gmd:linkage>
@@ -590,12 +642,12 @@
                                                 <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
                                             </gmd:protocol>
                                             <gmd:name>
-                                                <gco:CharacterString>Landing
-                                                  Page</gco:CharacterString>
+                                                <gco:CharacterString>
+                                                    <xsl:value-of select="normalize-space(string(@alternateIdentifierType))"/>
+                                                </gco:CharacterString>
                                             </gmd:name>
                                             <gmd:description>
-                                                <gco:CharacterString>Link to a web page related to
-                                                  the resource.</gco:CharacterString>
+                                                <gco:CharacterString>Link to a web page related to the resource.</gco:CharacterString>
                                             </gmd:description>
                                             <gmd:function>
                                                 <gmd:CI_OnLineFunctionCode
@@ -725,7 +777,10 @@
                 </gmd:CI_Date>
             </gmd:date>
         </xsl:if>
-        <gmd:date>
+        
+        <xsl:choose>
+        <xsl:when test="string-length(//*[local-name() = 'publicationYear'])>0">
+            <gmd:date>
             <gmd:CI_Date>
                 <gmd:date>
                     <gco:Date>
@@ -739,6 +794,11 @@
                 </gmd:dateType>
             </gmd:CI_Date>
         </gmd:date>
+        </xsl:when>
+            <xsl:otherwise>
+                <gmd:date gco:nilReason="missing"/>
+            </xsl:otherwise>
+        </xsl:choose>
         <xsl:if
             test="
                 ($datacite-dates/*[local-name() = 'date' and @dateType = 'Updated'][1] != '')
@@ -910,7 +970,7 @@
                     <xsl:call-template name="getidscheme">
                         <xsl:with-param name="httpuri" select="$httpuri"/>
                     </xsl:call-template>
-                </xsl:variable>
+                 </xsl:variable>
 
                 <xsl:if test="$httpuri != ''">
                     <xsl:attribute name="xlink:href">
@@ -1232,8 +1292,7 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                     <gmd:address>
                         <gmd:CI_Address>
                             <gmd:electronicMailAddress>
-                                
-                                    <xsl:choose>
+                                <xsl:choose>
                                         <xsl:when test="$email != ''">
                                             <gco:CharacterString>
                                             <xsl:value-of select="$email"/>
@@ -1245,7 +1304,6 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                             </xsl:attribute>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                
                             </gmd:electronicMailAddress>
                         </gmd:CI_Address>
                     </gmd:address>
@@ -1363,7 +1421,7 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
 
                     <xsl:if test="count(*[local-name() = 'geoLocationBox']) &gt; 0">
                         <xsl:variable name="thebox" select="*[local-name() = 'geoLocationBox']"/>
-                                         
+
                         <xsl:variable name="sLat">
                             <xsl:choose>
                                 <xsl:when
@@ -1452,8 +1510,9 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:variable>
-                        
-                        <xsl:if test="string(number($nLat)) != 'NaN' and string(number($wLong)) != 'NaN' and
+                        <xsl:if
+                            test="
+                                string(number($nLat)) != 'NaN' and string(number($wLong)) != 'NaN' and
                                 string(number($sLat)) != 'NaN' and string(number($eLong)) != 'NaN'">
                             <xsl:choose>
                                 <!-- check for degenerate bbox -->
@@ -1476,7 +1535,7 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                         </gmd:EX_BoundingPolygon>
                                     </gmd:geographicElement>
                                 </xsl:when>
-                                <!-- check to see if box crosses 180 with west side either in east long (positive) or <-180, or east side  
+<!-- check to see if box crosses 180 with west side either in east long (positive) or <-180, or east side  
                             >180. If so, create two bounding box geographicElements-->
                                 <xsl:when test="($wLong &gt;0 and $eLong &lt;0)">
                               <!-- use east longitude coordinates -->
@@ -1616,10 +1675,10 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                             </xsl:choose>
                         </xsl:if>
                     </xsl:if>
-                    </xsl:for-each>
+        </xsl:for-each>
                 </gmd:EX_Extent>
             </gmd:extent>
-        
+
     </xsl:template>
 
     <!-- Damian Ulbricht for DataCite pre v4: retrieves spatial coverage - 
@@ -1845,16 +1904,14 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
 
     <!-- retrieves keywords that have a subject scheme - group by subjectScheme -->
     <xsl:template name="thesauruskeywords">
-        <xsl:variable name="IEDAthesaurus"
-            select="string('IEDA integrated catalog keyword vocabulary')"/>
-        <xsl:for-each select="//*[local-name() = 'subject']">
-            <xsl:if test="generate-id(.) = generate-id(key('topic', string(@subjectScheme))[1])">
+        <xsl:variable name="IEDAthesaurus" select="string('IEDA integrated catalog keyword vocabulary')"/>
+        <xsl:for-each select="//*[local-name()='subject']">       
+            <xsl:if test="generate-id(.) = generate-id(key('topic',string(@subjectScheme))[1])">
                 <xsl:variable name="theScheme" select="string(@subjectScheme)"/>
                 <gmd:descriptiveKeywords>
                     <gmd:MD_Keywords>
                         <!--<xsl:variable name="keywordGroup" select="key('topic',$theScheme)"/>-->
-                        <xsl:for-each
-                            select="//*[local-name() = 'subject'][@subjectScheme = $theScheme]">
+                        <xsl:for-each select="//*[local-name() = 'subject'][@subjectScheme=$theScheme]">
                             <gmd:keyword>
                                 <gco:CharacterString>
                                     <xsl:value-of select="normalize-space(.)"/>
@@ -1863,10 +1920,9 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                         </xsl:for-each>
                         <xsl:choose>
                             <xsl:when
-                                test="
-                                    translate($theScheme, $uppercase, $smallcase) = 'place'
-                                    or contains(translate($theScheme, $uppercase, $smallcase), 'geograph')
-                                    or contains(translate($theScheme, $uppercase, $smallcase), 'location')">
+                                test="translate($theScheme, $uppercase, $smallcase) = 'place' 
+                                or contains(translate($theScheme, $uppercase, $smallcase), 'geograph') 
+                                or contains(translate($theScheme, $uppercase, $smallcase), 'location')">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
@@ -1874,7 +1930,7 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                 </gmd:type>
                             </xsl:when>
                             <xsl:when
-                                test="translate($theScheme, $uppercase, $smallcase) = 'ieda topic'">
+                                test="translate($theScheme, $uppercase, $smallcase) = 'ieda topic' ">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
@@ -1890,13 +1946,10 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                         <gmd:date>
                                             <gmd:CI_Date>
                                                 <gmd:date>
-                                                  <gco:Date>2017-10-11</gco:Date>
+                                                    <gco:Date>2017-10-11</gco:Date>
                                                 </gmd:date>
                                                 <gmd:dateType>
-                                                  <gmd:CI_DateTypeCode
-                                                  codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DateTypeCode"
-                                                  codeListValue="creation"
-                                                  >creation</gmd:CI_DateTypeCode>
+                                                    <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
                                                 </gmd:dateType>
                                             </gmd:CI_Date>
                                         </gmd:date>
@@ -1904,7 +1957,7 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                 </gmd:thesaurusName>
                             </xsl:when>
                             <xsl:when
-                                test="translate($theScheme, $uppercase, $smallcase) = 'ieda feature of interest'">
+                                test="translate($theScheme, $uppercase, $smallcase) = 'ieda feature of interest' ">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
@@ -1920,13 +1973,10 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                         <gmd:date>
                                             <gmd:CI_Date>
                                                 <gmd:date>
-                                                  <gco:Date>2017-10-11</gco:Date>
+                                                    <gco:Date>2017-10-11</gco:Date>
                                                 </gmd:date>
                                                 <gmd:dateType>
-                                                  <gmd:CI_DateTypeCode
-                                                  codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DateTypeCode"
-                                                  codeListValue="creation"
-                                                  >creation</gmd:CI_DateTypeCode>
+                                                    <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
                                                 </gmd:dateType>
                                             </gmd:CI_Date>
                                         </gmd:date>
@@ -1950,13 +2000,10 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                         <gmd:date>
                                             <gmd:CI_Date>
                                                 <gmd:date>
-                                                  <gco:Date>2017-10-11</gco:Date>
+                                                    <gco:Date>2017-10-11</gco:Date>
                                                 </gmd:date>
                                                 <gmd:dateType>
-                                                  <gmd:CI_DateTypeCode
-                                                  codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DateTypeCode"
-                                                  codeListValue="creation"
-                                                  >creation</gmd:CI_DateTypeCode>
+                                                    <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
                                                 </gmd:dateType>
                                             </gmd:CI_Date>
                                         </gmd:date>
@@ -1964,34 +2011,28 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                 </gmd:thesaurusName>
                             </xsl:when>
                             <xsl:when
-                                test="
-                                    translate($theScheme, $uppercase, $smallcase) = 'instrument'
-                                    or translate($theScheme, $uppercase, $smallcase) = 'sensor'">
+                                test="translate($theScheme, $uppercase, $smallcase) = 'instrument' 
+                                or translate($theScheme, $uppercase, $smallcase)= 'sensor'">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
-                                        codeListValue="instrument"
-                                        >instrument</gmd:MD_KeywordTypeCode>
+                                        codeListValue="instrument"><xsl:value-of select="$theScheme"/></gmd:MD_KeywordTypeCode>
                                 </gmd:type>
                             </xsl:when>
                             <xsl:when
-                                test="
-                                    translate($theScheme, $uppercase, $smallcase) = 'initiative'
-                                    or translate($theScheme, $uppercase, $smallcase) = 'project'
-                                    or translate($theScheme, $uppercase, $smallcase) = 'program'
-                                    or translate($theScheme, $uppercase, $smallcase) = 'cruise'">
+                                test="translate($theScheme, $uppercase, $smallcase) = 'initiative' 
+                                or translate($theScheme, $uppercase, $smallcase)= 'project'
+                                or translate($theScheme, $uppercase, $smallcase)= 'program'
+                                or translate($theScheme, $uppercase, $smallcase)= 'cruise'">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
-                                        codeListValue="project">
-                                        <xsl:value-of select="$theScheme"/>
-                                    </gmd:MD_KeywordTypeCode>
+                                        codeListValue="project"><xsl:value-of select="$theScheme"/></gmd:MD_KeywordTypeCode>
                                 </gmd:type>
                             </xsl:when>
                             <xsl:when
-                                test="
-                                    translate($theScheme, $uppercase, $smallcase) = 'platform'
-                                    or translate($theScheme, $uppercase, $smallcase) = 'facility'">
+                                test="translate($theScheme, $uppercase, $smallcase) = 'platform' 
+                                or translate($theScheme, $uppercase, $smallcase)= 'facility'">
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
@@ -2002,13 +2043,11 @@ The ID of persons should also be put as "xlink:href" attribute into the parent e
                                 <gmd:type>
                                     <gmd:MD_KeywordTypeCode
                                         codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
-                                        codeListValue="theme">
-                                        <xsl:value-of select="$theScheme"/>
-                                    </gmd:MD_KeywordTypeCode>
+                                        codeListValue="theme"><xsl:value-of select="$theScheme"/></gmd:MD_KeywordTypeCode>
                                 </gmd:type>
                             </xsl:otherwise>
                         </xsl:choose>
-
+                        
                     </gmd:MD_Keywords>
                 </gmd:descriptiveKeywords>
             </xsl:if>
