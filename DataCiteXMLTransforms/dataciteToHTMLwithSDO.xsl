@@ -365,7 +365,7 @@
                                 </xsl:if>
 
                                 <!--  funding -->
-                                <xsl:if test="//*[local-name() = 'format']">
+                                <xsl:if test="//*[local-name() = 'fundingReferences']">
                                     <div class="row">
                                         <div class="title">
                                             <xsl:text>Funding source(s):</xsl:text>
