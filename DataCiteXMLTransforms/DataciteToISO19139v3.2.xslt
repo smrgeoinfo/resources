@@ -134,8 +134,7 @@
                                 <gmd:function>
                                     <gmd:CI_OnLineFunctionCode
                                         codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
-                                        codeListValue="browseGraphic">logo
-                                        graphic</gmd:CI_OnLineFunctionCode>
+                                        codeListValue="browseGraphic">logo graphic</gmd:CI_OnLineFunctionCode>
                                 </gmd:function>
                             </gmd:CI_OnlineResource>
                         </gmd:onlineResource>
@@ -174,7 +173,7 @@
     <xsl:variable name="maintenanceContactEmail" select="string('info@iedadata.org')"/>
 
     <xsl:variable name="currentDateTime">
-        <xsl:value-of select="datetime:dateTime()"/>
+        <xsl:value-of select="datetime:date-time()"/>
     </xsl:variable>
     <!-- end of configuration variables -->
 
@@ -325,8 +324,7 @@
             </gmd:dateStamp>
 
             <gmd:metadataStandardName>
-                <gco:CharacterString>ISO 19139 Geographic Information - Metadata - Implementation
-                    Specification</gco:CharacterString>
+                <gco:CharacterString>ISO 19139 Geographic Information - Metadata - Implementation Specification</gco:CharacterString>
             </gmd:metadataStandardName>
             <gmd:metadataStandardVersion>
                 <gco:CharacterString>2007</gco:CharacterString>
@@ -615,9 +613,11 @@
                                             <gco:CharacterString>Landing Page</gco:CharacterString>
                                         </gmd:name>
                                         <gmd:description>
-                                            <gco:CharacterString>Link to DOI landing page or data
-                                                facility landing page if no DOI is
-                                                assigned.</gco:CharacterString>
+                                            <gco:CharacterString>
+                                                <xsl:value-of select="normalize-space(string('Link to DOI landing page or 
+                                                    data facility landing page if no DOI is
+                                                assigned.'))" />
+                                            </gco:CharacterString>
                                         </gmd:description>
                                         <gmd:function>
                                             <gmd:CI_OnLineFunctionCode
