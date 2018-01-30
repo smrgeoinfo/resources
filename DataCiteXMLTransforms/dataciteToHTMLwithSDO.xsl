@@ -364,6 +364,34 @@
                                     </div>
                                 </xsl:if>
 
+                                <!--  funding -->
+                                <xsl:if test="//*[local-name() = 'format']">
+                                    <div class="row">
+                                        <div class="title">
+                                            <xsl:text>Funding source(s):</xsl:text>
+                                        </div>
+                                        <xsl:for-each select="//*[local-name() = 'fundingReference']">
+                                            <div class="description">
+                                                <xsl:choose>
+                                                <xsl:when test="contains(*[local-name()='awardNumber']/@awardURI,'http')">
+                                                    <xsl:value-of select="normalize-space(string(*[local-name()='funderName']))"/>
+                                                    <a href="{*[local-name()='awardNumber']/@awardURI}"><xsl:text> #</xsl:text>                                                    
+                                                <xsl:value-of select="normalize-space(string(*[local-name()='awardNumber']))"/>
+                                                    </a>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="normalize-space(string(*[local-name()='funderName']))"/><xsl:text> #</xsl:text>
+                                                    <xsl:value-of select="normalize-space(string(*[local-name()='awardNumber']))"/>
+                                                </xsl:otherwise>
+                                                </xsl:choose>
+                                            </div>
+                                        </xsl:for-each>
+                                    </div>
+                                </xsl:if>
+
+
+
+
                                 <!--  resource CURATOR-alternate Identifier -->
                                 <xsl:for-each select="//*[local-name() = 'alternateIdentifier']">
                                     <xsl:call-template name="altIDHandler"/>
@@ -473,6 +501,8 @@
                         </a>
                     </div>
                 </xsl:when>
+                
+                <!--  note this expects the IGSN relatedIdentifier element value to be like 'igsn:xxx000000....' -->
                 <xsl:when test="@relatedIdentifierType = 'IGSN'">
                     <div class="description"> Sample ID: <a
                         href="https://app.geosamples.org/sample/igsn/{substring(.,string-length('igsn:')+1)}">
