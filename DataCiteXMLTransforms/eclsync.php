@@ -60,23 +60,27 @@ function parse_dir( $dir, $url ) {
 				$test5 = strpos($content, 'Scheme="EarthChem"');
 				$test6 = strpos($content, 'alternateIdentifierType="URL">http://www.earthchem.org/library');
 				$test7 = strpos($content, 'alternateIdentifierType="MGDS"');
-				$test8 = strlen($file) != 6;   //various test files have additional suffix strings
+				$test8 = strlen($file) != 6;
 
+				
 				if (($test1 or $test2 or $test3 or $test7 or $test8) === false)  {
 					// not an mgds record
 					//echo $content
 					$newxml = $xslt->transformToXml(new SimpleXMLElement($content));
 					//echo $newxml;
-					if (($test4 or $test5 or $test6) === true) {
+					if ((($test4 or $test5 or $test6) and $newxml) === true) {
 						$my_file = '../metadata/iso/test/' . $file . 'iso.xml';
 					} else {
-						
 						$my_file = '../metadata/iso/testfail/' . $file . 'iso.xml';
 					}
 					$fhandle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file); 
 					echo 'writing ' . $my_file ;
 					echo '<p>';
-					fwrite($fhandle, $newxml);
+					if ($newxml) {
+					    fwrite($fhandle, $newxml);
+					} else {
+						fwrite($fhandle, 'transform failure');
+					}
 					fclose($fhandle);
 					$count = $count + 1;
 				}
