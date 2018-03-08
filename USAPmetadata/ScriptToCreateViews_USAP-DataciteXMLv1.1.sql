@@ -27,6 +27,7 @@ queries to generate XML. See comments in the create scripts for the queries for
 	
 CHANGELOG:
 2018-03-06-- change logic for publisher to make it always 'U.S. Antarctic Program (USAP) Data Center'
+2018-03-07-- change field name in  generate_datacite_xml from dataCiteXML to datacitexml 
 	
 */
 
@@ -290,7 +291,7 @@ XMLROOT(XMLELEMENT(NAME resource, XMLATTRIBUTES('http://datacite.org/schema/kern
       XMLELEMENT(NAME "description", XMLATTRIBUTES('Abstract'::text AS "descriptionType"),d.abstract)),
    XMLELEMENT(NAME "geoLocations", vlo.location_xml, vlp.pointlocation_xml, vlb.boxlocation_xml),
    XMLELEMENT(NAME "fundingReferences", vaw.award_xml)
-), VERSION '1.0'::text ) AS "dataCiteXML" 
+), VERSION '1.0'::text ) AS datacitexml  
 
 From dataset d 
    left join "vw_creator_xml" vcr on d.id=vcr.d_id 
