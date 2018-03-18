@@ -1,4 +1,4 @@
 *.bak
 EarthChemLibrary/simpletransform.xslt
-*.zip
-DataCiteXMLTransforms.zip
+DataCiteXMLTransforms/archive/dataciteToHTMLwithSDObku20180130.xsl
+

@@ -20,7 +20,10 @@
     
     
   Stephen M. Richard
-    2017-01-14
+    2018-01-14
+    
+    2018-03-12.  Remove ' ' before DOI: prefix for @id on the dataset
+    
  -->
 
     <xsl:output method="text" indent="yes" encoding="UTF-8"/>
@@ -92,7 +95,7 @@
             </xsl:variable>
             <xsl:text>{
                 "@type": "Person",
-                "additionalType": "geolink:Person",&#10;</xsl:text>
+                "additionalType": "http://schema.geolink.org/1.0/base/main#Person",&#10;</xsl:text>
             <xsl:if test="$personID and string-length($personID) > 0">
                 <xsl:text>      "@id": "</xsl:text>
                 <xsl:value-of select="$personID"/>
@@ -153,7 +156,7 @@
             </xsl:if>
         </xsl:variable>
         <xsl:if test="($datacite-identifier and $datacite-identifier/@identifierType = 'DOI')">
-            <xsl:text>{&#10;    "@type": "DataDownload",&#10;    "additionalType": "dcat:distribution",&#10;</xsl:text>
+            <xsl:text>{&#10;    "@type": "DataDownload",&#10;    "additionalType": "http://www.w3.org/ns/dcat#distribution",&#10;</xsl:text>
             <xsl:text>      "name":"DOI landing page",&#10;</xsl:text>
             <xsl:variable name="theURL">
                 <xsl:choose>
@@ -174,7 +177,7 @@
                 </xsl:choose>
             </xsl:variable>
 
-            <xsl:text>      "dcat:accessURL": "</xsl:text>
+            <xsl:text>      "http://www.w3.org/ns/dcat#accessURL": "</xsl:text>
             <xsl:value-of select="$theURL"/>
             <xsl:text>",&#10;</xsl:text>
 
@@ -194,11 +197,11 @@
             <xsl:for-each
                 select="//*[local-name() = 'alternateIdentifier' and starts-with(., 'http')]">
                 <xsl:text>{&#10;</xsl:text>
-                <xsl:text>    "@type": "DataDownload",&#10;    "additionalType": "dcat:distribution",&#10;</xsl:text>
+                <xsl:text>    "@type": "DataDownload",&#10;    "additionalType": "http://www.w3.org/ns/dcat#distribution",&#10;</xsl:text>
                 <xsl:text>      "name":"</xsl:text>
                 <xsl:value-of select="@alternateIdentifierType"/>
                 <xsl:text>",&#10;</xsl:text>
-                <xsl:text>      "dcat:accessURL": "</xsl:text>
+                <xsl:text>      "http://www.w3.org/ns/dcat#accessURL": "</xsl:text>
                 <xsl:value-of select="normalize-space(text())"/>
                 <xsl:text>",&#10;</xsl:text>
 
@@ -232,18 +235,18 @@
                 <xsl:when test="starts-with($datacite-identifier, 'doi:')">
                     <xsl:value-of select="normalize-space($datacite-identifier)"/>
                 </xsl:when>
-                <xsl:when test="starts-with($datacite-identifier, 'http://')"> doi:<xsl:value-of
+                <xsl:when test="starts-with($datacite-identifier, 'http://')">doi:<xsl:value-of
                         select="substring-after($datacite-identifier, 'http://dx.doi.org/')"/>
                 </xsl:when>
-                <xsl:when test="$datacite-identifier/@identifierType = 'DOI'"> doi:<xsl:value-of
+                <xsl:when test="$datacite-identifier/@identifierType = 'DOI'">doi:<xsl:value-of
                         select="normalize-space($datacite-identifier)"/>
                 </xsl:when>
             </xsl:choose>
             <xsl:text>",&#10;</xsl:text>
 
             <xsl:text>               "@type": "PropertyValue",
-            "additionalType": ["geolink:Identifier", "datacite:Identifier"],
-            "propertyID": "datacite:doi",&#10;</xsl:text>
+            "additionalType": ["http://schema.geolink.org/1.0/base/main#Identifier", "http://purl.org/spar/datacite/Identifier"],
+            "propertyID": "http://purl.org/spar/datacite/doi",&#10;</xsl:text>
             <xsl:variable name="theURL">
                 <xsl:choose>
                     <xsl:when test="starts-with($datacite-identifier, 'doi:')">
@@ -297,8 +300,8 @@
             <xsl:value-of select="normalize-space(text())"/>
             <xsl:text>",&#10;</xsl:text>
             <xsl:text>                "@type": "PropertyValue",&#10;
-            "additionalType": ["geolink:Identifier",
-            "datacite:Identifier"],
+            "additionalType": ["http://schema.geolink.org/1.0/base/main#Identifier",
+            "http://purl.org/spar/datacite/Identifier"],
             "propertyID": "</xsl:text>
             <xsl:value-of select="@alternateIdentifierType"/>
             <xsl:text>",&#10;</xsl:text>
@@ -392,7 +395,7 @@
             </xsl:if>
 
             <xsl:text>     "@type": "CreativeWork",
-                "additionalType": "earthcollab:Project",&#10;</xsl:text>
+                "additionalType": "https://library.ucar.edu/earthcollab/schema#Project",&#10;</xsl:text>
 
             <xsl:if test="string-length($awardName) > 0">
                 <xsl:text>     "name": "</xsl:text>
@@ -710,7 +713,7 @@
                 <xsl:text>",&#10;</xsl:text>
             </xsl:if>
 
-            <xsl:text>    "@type": "PropertyValue",&#10;    "additionalType": "earthcollab:Parameter",&#10;</xsl:text>
+            <xsl:text>    "@type": "PropertyValue",&#10;    "additionalType": "https://library.ucar.edu/earthcollab/schema#Parameter",&#10;</xsl:text>
 
             <xsl:if test="$varDescription">
                 <xsl:text>      "description": "</xsl:text>
@@ -819,7 +822,7 @@
                 "dcat":"http://www.w3.org/ns/dcat#"
                 </xsl:text>
         </xsl:variable>
-        <xsl:variable name="DOIuri"> DOI:<xsl:value-of select="//*[local-name() = 'identifier']"/>
+        <xsl:variable name="DOIuri">DOI:<xsl:value-of select="//*[local-name() = 'identifier']"/>
         </xsl:variable>
         <xsl:variable name="DOIvalue">
             <xsl:value-of select="//*[local-name() = 'identifier']"/>
@@ -1037,7 +1040,7 @@
         <xsl:value-of select="$DOIuri"/>
         <xsl:text>",&#10;</xsl:text>
         <xsl:text>  "@type": "Dataset",&#10;</xsl:text>
-        <xsl:text>  "additionalType": [&#10;    "geolink:Dataset",&#10;    "vivo:Dataset"&#10;  ],&#10;</xsl:text>
+        <xsl:text>  "additionalType": [&#10;    "http://schema.geolink.org/1.0/base/main#Dataset",&#10;    "http://vivoweb.org/ontology/core#Dataset"&#10;  ],&#10;</xsl:text>
 
         <xsl:text>  "name": "</xsl:text>
         <!-- clean up any double quotes in the text -->
