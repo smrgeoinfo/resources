@@ -1,30 +1,32 @@
 <?xml version="1.0"?>
 <!--
-    Document   : datadoi.xsl
-    Created on : February 18, 2015, 11:49 AM
+    Document   : dataciteToHTML.xsl. (version created from datadoi.xsl)
+    Original Created on : February 18, 2015, 11:49 AM
     Author     : vickiferrini
-    Description: NEW IEDA Data DOI landing page.
-    
-    Update     :May 26, 2017  Stephen Richard
-    Notes      : adapt for Datacite v4; use local names so is version-agnostic.  
-        only major change in v4 is geoLocation encoding
-	
-   Update      :March 13,2018 Vicki Ferrini
-   Notes       :Adapted to accommodate MGDL DataCite v4 records and cleaned up some formatting
 
+    Description: XSLT to generate html for IEDA Data DOI landing page.
+	Repository : https://github.com/iedadata/resources
     
+    Updates
+               : May 26, 2017  Stephen Richard adapt for Datacite v4; use local names so is 
+			   version-agnostic.  Only major change in v4 is geoLocation encoding
+		       : 2018-02-05.  Superseded by dataciteToHTMLwithSDO.xsl SMR 
+			   
+			   
+ * @copyright    2007-2017 Interdisciplinary Earth Data Alliance, Columbia University. All Rights Reserved.
+ *               Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance 
+                 with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *               Unless required by applicable law or agreed to in writing, software distributed under the License is 
+                 distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+				 See the License for the specific language governing permissions and limitations under the License
+			   
 -->
-
 
 <xsl:stylesheet xmlns:k4="http://datacite.org/schema/kernel-4"
     xmlns:k3="http://datacite.org/schema/kernel-3" xmlns:k2="http://datacite.org/schema/kernel-2.2"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-    
-    <!-- import xsl that does the datacite to json-ld trnsform -->
-    <xsl:import href="DataCiteToSchemaOrgDataset1.0.xslt"/>
-    
     <xsl:output method="html"/>
-
     <xsl:template match="/">
 
         <html>
@@ -36,23 +38,12 @@
                 <link rel="stylesheet" type="text/css"
                     href="http://www.marine-geo.org/inc/jquery-ui-1.10.2.custom/css/smoothness/jquery-ui-1.10.2.custom.min.css"
                     media="all"/>
-                <xsl:text>&#10;</xsl:text>                
                 <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyATYahozDIlFIM1mO7o66AocXi72mkPT18&amp;sensor=false&amp;libraries=drawing" type="text/javascript"/>
-                <xsl:text>&#10;</xsl:text>                
                 <script type="text/javascript" src="http://www.marine-geo.org/inc/jquery-1.9.1.js"/>
-                <xsl:text>&#10;</xsl:text>                
                 <script type="text/javascript" src="http://www.marine-geo.org/inc/jquery-ui-1.10.2.custom.min.js"/>
-                <xsl:text>&#10;</xsl:text>                
                 <script type="text/javascript" src="http://www.marine-geo.org/inc/basemap_v3.js"/>
                 <!-- <script type="text/javascript" src="/doi/doimap.js"/>-->
                 <script type="text/javascript" src="http://get.iedadata.org/doi/doimap.js"/>
-                <xsl:text>&#10;</xsl:text>               
-                <!-- insert schema.org JSon-ld -->
-                <script type="application/ld+json">
-                    <xsl:text>&#10;</xsl:text>
-                    <xsl:apply-templates select="//*[local-name() = 'resource']"/>
-                    <xsl:text>&#10;</xsl:text>
-                </script>
             </head>
 
             <xsl:element name="body">
@@ -70,7 +61,7 @@
                             <div>
                                 <a href="http://www.iedadata.org">
                                     <img onclick="http://www.iedadata.org"
-                                        src="http://app.iedadata.org/images/ieda_maplogo.png"
+                                        src="http://get.iedadata.org/doi/ieda_logo_200x88.png"
                                         alt="IEDA"/>
                                 </a>
                             </div>
@@ -368,34 +359,6 @@
                                     </div>
                                 </xsl:if>
 
-                                <!--  funding -->
-                                <xsl:if test="//*[local-name() = 'fundingReferences']">
-                                    <div class="row">
-                                        <div class="title">
-                                            <xsl:text>Funding source(s):</xsl:text>
-                                        </div>
-                                        <xsl:for-each select="//*[local-name() = 'fundingReference']">
-                                            <div class="description">
-                                                <xsl:choose>
-                                                <xsl:when test="contains(*[local-name()='awardNumber']/@awardURI,'http')">
-                                                    <xsl:value-of select="normalize-space(string(*[local-name()='funderName']))"/><xsl:text>: </xsl:text>
-                                                    <a href="{*[local-name()='awardNumber']/@awardURI}">                                                    
-                                                <xsl:value-of select="normalize-space(string(*[local-name()='awardNumber']))"/>
-                                                    </a>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="normalize-space(string(*[local-name()='funderName']))"/><xsl:text> #</xsl:text>
-                                                    <xsl:value-of select="normalize-space(string(*[local-name()='awardNumber']))"/>
-                                                </xsl:otherwise>
-                                                </xsl:choose>
-                                            </div>
-                                        </xsl:for-each>
-                                    </div>
-                                </xsl:if>
-
-
-
-
                                 <!--  resource CURATOR-alternate Identifier -->
                                 <xsl:for-each select="//*[local-name() = 'alternateIdentifier']">
                                     <xsl:call-template name="altIDHandler"/>
@@ -505,14 +468,10 @@
                         </a>
                     </div>
                 </xsl:when>
-                
-                <!--  note this expects the IGSN relatedIdentifier element value to be like 'xxx000000....'
-                   i.e. no URI prefix 'igsn:' on the element value.
-                    Use the IGSN handle server for most general identifier resolution-->
                 <xsl:when test="@relatedIdentifierType = 'IGSN'">
                     <div class="description"> Sample ID: <a
-                        href="http://igsn.org/{normalize-space(string(.))}">
-                        igsn:<xsl:value-of select="."/>
+                        href="https://app.geosamples.org/sample/igsn/{substring(.,string-length('igsn:')+1)}">
+                        <xsl:value-of select="."/>
                     </a>
                     </div>
                 </xsl:when>
@@ -574,21 +533,6 @@
                     <div style="clear:both"/>
                 </div>
             </xsl:when>
-            <xsl:when test="contains(string(.),'marine-geo.org')">
-                <div class="row" style="min-height:36px;">
-                    <div class="title">
-                        <xsl:text>Data Curated by:</xsl:text>
-                    </div>
-                    <div class="description">
-                      <a href="http://www.marine-geo.org/library">
-                          <xsl:text>Marine Geoscience Data System (MGDS) </xsl:text>
-                      </a>
-                    </div>
-                    <button type="button" class="btn" onclick="window.location='{.}'"> Download Data </button>
-                    <div style="clear:both"/>
-                </div>
-            </xsl:when>
-
             <xsl:when test="(@alternateIdentifierType = 'URL') and (//*[local-name()='publisher'])">
                 <div class="row" style="min-height:36px;">
                     <div class="title">
@@ -628,18 +572,7 @@
                     <div class="description">
                         <xsl:value-of select="@alternateIdentifierType"/>
                         <xsl:text>: </xsl:text>
-                        <xsl:choose>
-                            <xsl:when test="@alternateIdentifierType='dif_id'">
-                                <a href="https://gcmd.gsfc.nasa.gov/search/Metadata.do?entry={.}"><xsl:value-of select="."/></a>
-                            </xsl:when>
-                            <xsl:when test="contains(string(.),'http')">
-                                <a href="{.}"><xsl:value-of select="."/></a>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="."/>
-                            </xsl:otherwise>
-                        
-                        </xsl:choose>
+                        <xsl:value-of select="."/>
                     </div>
                 </div>
                 </xsl:if>
