@@ -365,7 +365,7 @@
                                 </xsl:if>
 
                                 <!--  funding -->
-                                <xsl:if test="//*[local-name() = 'format']">
+                                <xsl:if test="//*[local-name() = 'fundingReferences']">
                                     <div class="row">
                                         <div class="title">
                                             <xsl:text>Funding source(s):</xsl:text>
@@ -502,11 +502,13 @@
                     </div>
                 </xsl:when>
                 
-                <!--  note this expects the IGSN relatedIdentifier element value to be like 'igsn:xxx000000....' -->
+                <!--  note this expects the IGSN relatedIdentifier element value to be like 'xxx000000....'
+                   i.e. no URI prefix 'igsn:' on the element value.
+                    Use the IGSN handle server for most general identifier resolution-->
                 <xsl:when test="@relatedIdentifierType = 'IGSN'">
                     <div class="description"> Sample ID: <a
-                        href="https://app.geosamples.org/sample/igsn/{substring(.,string-length('igsn:')+1)}">
-                        <xsl:value-of select="."/>
+                        href="http://igsn.org/{normalize-space(string(.))}">
+                        igsn:<xsl:value-of select="."/>
                     </a>
                     </div>
                 </xsl:when>
@@ -607,7 +609,18 @@
                     <div class="description">
                         <xsl:value-of select="@alternateIdentifierType"/>
                         <xsl:text>: </xsl:text>
-                        <xsl:value-of select="."/>
+                        <xsl:choose>
+                            <xsl:when test="@alternateIdentifierType='dif_id'">
+                                <a href="https://gcmd.gsfc.nasa.gov/search/Metadata.do?entry={.}"><xsl:value-of select="."/></a>
+                            </xsl:when>
+                            <xsl:when test="contains(string(.),'http')">
+                                <a href="{.}"><xsl:value-of select="."/></a>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="."/>
+                            </xsl:otherwise>
+                        
+                        </xsl:choose>
                     </div>
                 </div>
                 </xsl:if>
