@@ -4,6 +4,19 @@
  * XML Sitemap PHP Script
  * For more info, see: http://yoast.com/xml-sitemap-php-script/
  * Copyright (C), 2011 - 2012 - Joost de Valk, joost@yoast.com
+ 
+ License:  This script is licensed under the GPL v3. (inherited from original Yoast script)
+ 
+ * 2018-01-24 Edited by SM Richard to generate sitemap from the IEDA
+ get.iedatada.org/doi directory, which contains datacite XML metadata 
+ for the EarthChem Library (ECL) and Marine-Geo Digital Library (MGDL). 
+ GETS from the http://get.iedadata.org/doi/ directory are redirected by
+ the .htaccess file to transform the xml to html; the transformation inserts
+ a schema.org JSON-LD script in the html <head> section for use by 
+ google and other search engines.  The code for the transformations is
+ located in https://github.com/iedadata/resources/tree/master/DataCiteXMLTransforms
+ 
+ repository: https://github.com/iedadata/resources/tree/master/XMLsitemap%20tool
  */
 
 require './config.php';
