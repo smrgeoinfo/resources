@@ -8,6 +8,10 @@
     Update     :May 26, 2017  Stephen Richard
     Notes      : adapt for Datacite v4; use local names so is version-agnostic.  
         only major change in v4 is geoLocation encoding
+	
+   Update      :March 13,2018 Vicki Ferrini
+   Notes       :Adapted to accommodate MGDL DataCite v4 records and cleaned up some formatting
+
     
 -->
 
@@ -374,8 +378,8 @@
                                             <div class="description">
                                                 <xsl:choose>
                                                 <xsl:when test="contains(*[local-name()='awardNumber']/@awardURI,'http')">
-                                                    <xsl:value-of select="normalize-space(string(*[local-name()='funderName']))"/>
-                                                    <a href="{*[local-name()='awardNumber']/@awardURI}"><xsl:text> #</xsl:text>                                                    
+                                                    <xsl:value-of select="normalize-space(string(*[local-name()='funderName']))"/><xsl:text>: </xsl:text>
+                                                    <a href="{*[local-name()='awardNumber']/@awardURI}">                                                    
                                                 <xsl:value-of select="normalize-space(string(*[local-name()='awardNumber']))"/>
                                                     </a>
                                                 </xsl:when>
@@ -570,6 +574,21 @@
                     <div style="clear:both"/>
                 </div>
             </xsl:when>
+            <xsl:when test="contains(string(.),'marine-geo.org')">
+                <div class="row" style="min-height:36px;">
+                    <div class="title">
+                        <xsl:text>Data Curated by:</xsl:text>
+                    </div>
+                    <div class="description">
+                      <a href="http://www.marine-geo.org/library">
+                          <xsl:text>Marine Geoscience Data System (MGDS) </xsl:text>
+                      </a>
+                    </div>
+                    <button type="button" class="btn" onclick="window.location='{.}'"> Download Data </button>
+                    <div style="clear:both"/>
+                </div>
+            </xsl:when>
+
             <xsl:when test="(@alternateIdentifierType = 'URL') and (//*[local-name()='publisher'])">
                 <div class="row" style="min-height:36px;">
                     <div class="title">
