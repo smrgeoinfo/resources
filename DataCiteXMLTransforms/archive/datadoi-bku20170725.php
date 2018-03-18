@@ -8,7 +8,7 @@ if ($id=='100001'){
     $service = "http://{$_SERVER['HTTP_HOST']}/metadata/doi/{$id}";
     $headers = get_headers($service, 1);
     if ($headers[0] == 'HTTP/1.1 200 OK') {
-        $xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/dataciteToHTMLwithSDO.xsl";
+        $xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/datadoi.xsl";
         $xslt = new XSLTProcessor();
         $xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile)));
         $content = file_get_contents($service);

@@ -9,6 +9,10 @@
  * will have to add additional tests to identify USAP metadata.
  * S. M. Richard 2018-01-29
  * framework based on xml-sitemap.php from  Joost de Valk, joost@yoast.com
+ 
+ 
+ * 2018-03-18 This script is not being used in production and will be archived
+ *  
  */
 
 require './config-eclsync.php';
