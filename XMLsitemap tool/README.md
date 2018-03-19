@@ -1,4 +1,6 @@
-# This directory contains files for generating a sitemap.xml file for metadata in the web-accessible get.iedatada.org/doi.
+# Sitemap tools for IEDA
+
+This directory contains files for generating a sitemap.xml file for metadata in the web-accessible get.iedatada.org/doi.
 
 ## Files:
 ### xml-sitemap.php
