@@ -28,7 +28,7 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     
     <!-- import xsl that does the datacite to json-ld transform; the xslt must be in the same directory -->
-    <xsl:import href="dataciteToSchemaOrgDataset1.0.xslt"/>
+    <xsl:import href="dataciteToSchemaOrgDataset1.1.xslt"/>
     
     <xsl:output method="html"/>
 
