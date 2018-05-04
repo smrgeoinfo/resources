@@ -1,0 +1,103 @@
+/* 
+    Created on : Feb 18, 2015, 1:07:47 PM
+    Author     : vickiferrini
+     * 
+  smr 2018-05-03 minor updates for use with ISO metadata display
+   * fix comment problems (change // to /* */)
+*/
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 15px;
+    text-align: left;
+}
+#mapc {
+    width: 320px;
+    height: 320px;
+    z-index: 1;
+}
+h1,h2 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+/* smr 2018-05-03 make bigger font size */
+h1 {
+    font-size: 200%;
+    margin-left: 5px;
+    padding-left: 5px;
+    padding-top: 3px;
+    padding-bottom: 2px;
+    background-color: #D5D5D5;
+}
+#right-side {
+   float: right;
+   margin-left: 10px;
+}
+/* smr 2018-05-03 add */
+#left-side {
+   float: left;
+   margin-left: 10px;
+}
+img {
+    padding-top: 5px;
+    padding-bottom: 12px;
+}
+/*div.row:after {
+    content: '';
+    display: block;
+    clear:both;
+}*/
+div.row {
+    padding: 10px;
+    position: relative;
+}
+
+div.description {
+    font-size: 90%;
+    margin-left: 150px;
+}
+
+.btn {
+  margin-left: 150px;
+  margin-top: 10px;
+    /* max-width: 275px; */
+  max-width: 200px;
+  background: #3498db;
+  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+  background-image: -o-linear-gradient(top, #3498db, #2980b9);
+  background-image: linear-gradient(to bottom, #3498db, #2980b9);
+  -webkit-border-radius: 28;
+  -moz-border-radius: 28;
+  border-radius: 28px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 5px 15px 5px 15px;
+  text-decoration: none;
+}
+.btn:hover {
+  background: #3cb0fd;
+  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+  text-decoration: none;
+}
+
+div.title {
+    position: absolute;
+    left:10px;
+    top:10px;
+    font-size: 95%;
+    margin-left: 5px;
+/*     padding: 10px; */
+    font-weight: bold;
+    width: 150px;
+}
+
+#container {
+    position: relative;
+    min-width: 800px;
+}
