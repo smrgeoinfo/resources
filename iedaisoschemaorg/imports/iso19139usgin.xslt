@@ -1,60 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmi="http://www.isotc211.org/2005/gmi"
-	xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gco="http://www.isotc211.org/2005/gco"
-	xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gml="http://www.opengis.net/gml"
-	xmlns:res="http://www.esri.com/metadata/res/">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:gmd="http://www.isotc211.org/2005/gmd" 
+	xmlns:gmi="http://www.isotc211.org/2005/gmi"
+	xmlns:srv="http://www.isotc211.org/2005/srv" 
+	xmlns:gco="http://www.isotc211.org/2005/gco" 
+	xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gml="http://www.opengis.net/gml" xmlns:res="http://www.esri.com/metadata/res/">
 	<!-- An XSLT template for displaying metadata that is stored in the ISO 19139 metadata format.
 
      Copyright (c) 2009-2010, Environmental Systems Research Institute, Inc. All rights reserved.
 	
      Revision History: Created 4/21/2009 avienneau -->
-	<!-- smr 2014-01-29
+	 <!-- smr 2014-01-29
 	 fix bug with brows graphic URL; 
 	 modify formatting to make more compact
 	 fix bad call for template to get metadata section inforamtion displayed -->
 	<!-- SMR add imports 2012-09-07 -->
 	<!-- SMR 2017-10-03 add test for gmi:MI_Metadata as root elemenent. Doesn't display any other gmi elements if present. -->
-
-	<xsl:import href="generalwMap.xslt"/>
-	<xsl:import href="XML.xslt"/>
-	<xsl:import href="codelists.xslt"/>
-	<xsl:import href="auxLanguages.xslt"/>
-	<xsl:import href="auxCountries.xslt"/>
-	<xsl:import href="auxUCUM.xslt"/>
-
-	<xsl:output method="xml" indent="yes" encoding="UTF-8"
-		doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
-		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"/>
+	
+	<xsl:import href = "general.xslt" />
+	<xsl:import href = "XML.xslt" />
+	<xsl:import href = "codelists.xslt" />
+	<xsl:import href = "auxLanguages.xslt" />
+	<xsl:import href = "auxCountries.xslt" />
+	<xsl:import href = "auxUCUM.xslt" />
+	
+	<xsl:output method="xml" indent="yes" encoding="UTF-8" doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"/>
 	<xsl:template name="iso19139">
-		<xsl:apply-templates select="//gmd:MD_Metadata | //gmi:MI_Metadata" mode="test"/>
+	<xsl:apply-templates select="//gmd:MD_Metadata | //gmi:MI_Metadata"  mode="test"/>	
 	</xsl:template>
 
 
-	<xsl:template match="gmd:MD_Metadata | gmi:MI_Metadata" mode="test">
-		
-		<!-- display organization logo at top of web page, update as appropriate... -->
-		<div>
-			<a href="http://www.iedadata.org"><img onclick="http://www.iedadata.org" src="http://app.iedadata.org/images/ieda_maplogo.png" alt="IEDA"/></a>
-		
-		<!-- partner system logo for metadata contact if present 
-		(smr remove 2018-05-08, ECL logo link broken, MGDL and USAP don't have; still in github
-		source code -->
-	
-		</div>
-		
+<xsl:template match="gmd:MD_Metadata | gmi:MI_Metadata" mode="test" >
+		<h3>Metadata record format is ISO 19139 XML</h3>
 		<h1>
-			<xsl:value-of
-				select="//gmd:identificationInfo//gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"
-			/>
+			<xsl:value-of select="//gmd:identificationInfo//gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"/>
 		</h1>
-		
-		<!-- pick up spatial extent that is a point location, or a bounding box -->
-		<xsl:variable name="hasGeoSpatial"
-			select="
-			count(//gmd:extent[count(descendant::*[local-name() = 'polygon']/*[local-name() = 'Point']) > 0 or
-			count(descendant::gmd:EX_GeographicBoundingBox) > 0]) > 0"/>
-		
 		<xsl:variable name="dataIdInfo" select="//gmd:identificationInfo"/>
 		<xsl:variable name="spatRepInfo" select="//gmd:spatialRepresentationInfo"/>
 		<xsl:variable name="contInfo" select="//gmd:contentInfo"/>
@@ -64,132 +43,115 @@
 		<xsl:variable name="distInfo" select="//gmd:distributionInfo"/>
 		<xsl:variable name="appSchInfo" select="//gmd:applicationSchemaInfo"/>
 		<xsl:variable name="mdExtInfo" select="//gmd:metadataExtensionInfo"/>
-		<xsl:variable name="metadata-sections"
-			select="
-				//gmd:fileIdentifier |
-				//gmd:language |
-				//gmd:characterSet |
-				//gmd:parentIdentifier |
-				//gmd:hierarchyLevel |
-				//gmd:hierarchyLevelName |
-				//gmd:contact |
-				//gmd:dateStamp |
-				//gmd:metadataStandardName |
-				//gmd:metadataStandardVersion |
-				//gmd:dataSetURI |
-				//gmd:metadataMaintenance |
-				//gmd:metadataConstraints |
-				//gmd:locale"/>
-
-		<div id="container">
-<div>
-	<div id="left-side">
-			<ul>
-				<li class="iso19139heading">ISO19139 metadata content</li>
-				<!-- Resource Identification -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$dataIdInfo"/>
-					<xsl:with-param name="label">Resource Identification
-						Information</xsl:with-param>
-					<xsl:with-param name="sub-label"> Resource </xsl:with-param>
-				</xsl:call-template>
-				<!-- Spatial Representation Information  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$spatRepInfo"/>
-					<xsl:with-param name="label"> Spatial representation information </xsl:with-param>
-					<xsl:with-param name="sub-label"> Representation </xsl:with-param>
-				</xsl:call-template>
-				<!-- Content Information  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$contInfo"/>
-					<xsl:with-param name="label">Content information</xsl:with-param>
-					<xsl:with-param name="sub-label"> Description </xsl:with-param>
-				</xsl:call-template>
-				<!-- Reference System Information  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$refSysInfo"/>
-					<xsl:with-param name="label">Reference System Information</xsl:with-param>
-					<xsl:with-param name="sub-label">Reference System </xsl:with-param>
-				</xsl:call-template>
-				<!-- Data Quality Information -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$dqInfo"/>
-					<xsl:with-param name="label">Data Quality Information</xsl:with-param>
-					<xsl:with-param name="sub-label">Data quality </xsl:with-param>
-				</xsl:call-template>
-				<!-- Distribution Information  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$distInfo"/>
-					<xsl:with-param name="label">Distribution Information</xsl:with-param>
-					<xsl:with-param name="sub-label">Distribution</xsl:with-param>
-				</xsl:call-template>
-				<!-- Portrayal Catalogue Reference  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$porCatInfo"/>
-					<xsl:with-param name="label">Portrayal Information</xsl:with-param>
-					<xsl:with-param name="sub-label"> Catalog </xsl:with-param>
-				</xsl:call-template>
-				<!-- Application Schema Information  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$appSchInfo"/>
-					<xsl:with-param name="label">Application Schema Information</xsl:with-param>
-					<xsl:with-param name="sub-label">Schema</xsl:with-param>
-				</xsl:call-template>
-				<!-- Metadata Extension Information  -->
-				<xsl:call-template name="TOC-HEADING">
-					<xsl:with-param name="nodes" select="$mdExtInfo"/>
-					<xsl:with-param name="label">Metadata Extension Information</xsl:with-param>
-					<xsl:with-param name="sub-label">Extension </xsl:with-param>
-				</xsl:call-template>
-				<!-- Metadata Identification -->
-				<!-- Root node "metadata" will always exist. Only add to TOC if it contains elements
-          that describe the metadata. -->
-				<xsl:if test="count($metadata-sections) &gt; 0">
-					<li>
-						<a href="#Metadata_Information">Metadata Information</a>
-					</li>
-				</xsl:if>
-			</ul>
-</div>
-</div>
-			<!--displa map if have geospatial extent -->
-			<div id="right-side">
-				<!--<xsl:apply-templates select="//k4:geoLocations"/>-->
-				
-				<xsl:if test="$hasGeoSpatial">
-				<xsl:call-template name="showMap"/>
-				</xsl:if>
-			</div>
-
-			<!-- PUT METADATA CONTENT ON THE HTML PAGE  -->
+		<xsl:variable name="metadata-sections" select="
+		//gmd:fileIdentifier |
+		//gmd:language |
+		//gmd:characterSet |
+		//gmd:parentIdentifier |
+		//gmd:hierarchyLevel |
+		//gmd:hierarchyLevelName |
+		//gmd:contact |
+		//gmd:dateStamp |
+		//gmd:metadataStandardName |
+		//gmd:metadataStandardVersion |
+		//gmd:dataSetURI |
+		//gmd:metadataMaintenance |
+		//gmd:metadataConstraints | 
+		//gmd:locale"/>
+		<ul>
+			<li class="iso19139heading">ISO19139 metadata content</li>
 			<!-- Resource Identification -->
-			<xsl:apply-templates select="$dataIdInfo/*" mode="iso19139"/>
-			<!-- Spatial Representation Information -->
-			<xsl:apply-templates select="$spatRepInfo/*" mode="iso19139"/>
-			<!-- Content Information -->
-			<xsl:apply-templates select="$contInfo" mode="iso19139"/>
-			<!-- NOTE: special case, see template -->
-			<!-- Reference System Information -->
-			<xsl:apply-templates select="$refSysInfo/*" mode="iso19139"/>
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$dataIdInfo"/>
+				<xsl:with-param name="label">Resource Identification Information</xsl:with-param>
+				<xsl:with-param name="sub-label"> Resource </xsl:with-param>
+			</xsl:call-template>
+			<!-- Spatial Representation Information  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$spatRepInfo"/>
+				<xsl:with-param name="label"> Spatial representation information </xsl:with-param>
+				<xsl:with-param name="sub-label"> Representation </xsl:with-param>
+			</xsl:call-template>
+			<!-- Content Information  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$contInfo"/>
+				<xsl:with-param name="label">Content information</xsl:with-param>
+				<xsl:with-param name="sub-label"> Description </xsl:with-param>
+			</xsl:call-template>
+			<!-- Reference System Information  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$refSysInfo"/>
+				<xsl:with-param name="label">Reference System Information</xsl:with-param>
+				<xsl:with-param name="sub-label">Reference System </xsl:with-param>
+			</xsl:call-template>
 			<!-- Data Quality Information -->
-			<xsl:apply-templates select="$dqInfo/*" mode="iso19139"/>
-			<!-- Distribution Information -->
-			<xsl:apply-templates select="$distInfo/*" mode="iso19139"/>
-			<!-- Portrayal Catalogue Reference -->
-			<xsl:apply-templates select="$porCatInfo/*" mode="iso19139"/>
-			<!-- Application Schema Information -->
-			<xsl:apply-templates select="$appSchInfo/*" mode="iso19139"/>
-			<!-- Metadata Extension Information -->
-			<xsl:apply-templates select="$mdExtInfo/*" mode="iso19139"/>
-			<!-- Metadata Information -->
-			<!-- Root node "metadata" will always exist. Only apply template if it contains elements
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$dqInfo"/>
+				<xsl:with-param name="label">Data Quality Information</xsl:with-param>
+				<xsl:with-param name="sub-label">Data quality </xsl:with-param>
+			</xsl:call-template>
+			<!-- Distribution Information  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$distInfo"/>
+				<xsl:with-param name="label">Distribution Information</xsl:with-param>
+				<xsl:with-param name="sub-label">Distribution</xsl:with-param>
+			</xsl:call-template>
+			<!-- Portrayal Catalogue Reference  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$porCatInfo"/>
+				<xsl:with-param name="label">Portrayal Information</xsl:with-param>
+				<xsl:with-param name="sub-label"> Catalog </xsl:with-param>
+			</xsl:call-template>
+			<!-- Application Schema Information  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$appSchInfo"/>
+				<xsl:with-param name="label">Application Schema Information</xsl:with-param>
+				<xsl:with-param name="sub-label">Schema</xsl:with-param>
+			</xsl:call-template>
+			<!-- Metadata Extension Information  -->
+			<xsl:call-template name="TOC-HEADING">
+				<xsl:with-param name="nodes" select="$mdExtInfo"/>
+				<xsl:with-param name="label">Metadata Extension Information</xsl:with-param>
+				<xsl:with-param name="sub-label">Extension </xsl:with-param>
+			</xsl:call-template>
+			<!-- Metadata Identification -->
+			<!-- Root node "metadata" will always exist. Only add to TOC if it contains elements
           that describe the metadata. -->
 			<xsl:if test="count($metadata-sections) &gt; 0">
-				<!--			<xsl:apply-templates select="gmd:MD_Metadata" mode="iso19139"/>
--->
-				<!-- move template content here: call to template isn't working -->
-
-				<!--		<xsl:template match="gmd:MD_Metadata" mode="iso19139">-->
+				<li>
+					<a href="#Metadata_Information">Metadata Information</a>
+				</li>
+			</xsl:if>
+		</ul>
+		<!-- PUT METADATA CONTENT ON THE HTML PAGE  -->
+		<!-- Resource Identification -->
+		<xsl:apply-templates select="$dataIdInfo/*" mode="iso19139"/>
+		<!-- Spatial Representation Information -->
+		<xsl:apply-templates select="$spatRepInfo/*" mode="iso19139"/>
+		<!-- Content Information -->
+		<xsl:apply-templates select="$contInfo" mode="iso19139"/>
+		<!-- NOTE: special case, see template -->
+		<!-- Reference System Information -->
+		<xsl:apply-templates select="$refSysInfo/*" mode="iso19139"/>
+		<!-- Data Quality Information -->
+		<xsl:apply-templates select="$dqInfo/*" mode="iso19139"/>
+		<!-- Distribution Information -->
+		<xsl:apply-templates select="$distInfo/*" mode="iso19139"/>
+		<!-- Portrayal Catalogue Reference -->
+		<xsl:apply-templates select="$porCatInfo/*" mode="iso19139"/>
+		<!-- Application Schema Information -->
+		<xsl:apply-templates select="$appSchInfo/*" mode="iso19139"/>
+		<!-- Metadata Extension Information -->
+		<xsl:apply-templates select="$mdExtInfo/*" mode="iso19139"/>
+		<!-- Metadata Information -->
+		<!-- Root node "metadata" will always exist. Only apply template if it contains elements
+          that describe the metadata. -->
+		<xsl:if test="count($metadata-sections) &gt; 0">
+<!--			<xsl:apply-templates select="gmd:MD_Metadata" mode="iso19139"/>
+-->		
+		<!-- move template content here: call to template isn't working -->
+		
+	<!--		<xsl:template match="gmd:MD_Metadata" mode="iso19139">-->
 				<a name="Metadata_Information" id="Metadata_Information">
 					<hr/>
 				</a>
@@ -200,8 +162,7 @@
 					<dd>
 						<xsl:for-each select="gmd:dateStamp">
 							<dt>
-								<span class="element">Metadata data stamp:
-									</span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
+								<span class="element">Metadata data stamp: </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:apply-templates select="gmd:metadataMaintenance" mode="iso19139"/>
@@ -221,18 +182,16 @@
 								<xsl:apply-templates select="*" mode="iso19139"/>
 							</dl>
 						</xsl:for-each>
-						<xsl:apply-templates select="gmd:contact/gmd:CI_ResponsibleParty"
-							mode="iso19139"/>
+						<xsl:apply-templates select="gmd:contact/gmd:CI_ResponsibleParty" mode="iso19139"/>
 						<xsl:for-each select="gmd:hierarchyLevel/gmd:MD_ScopeCode">
 							<dt>
 								<span class="element"> Metadata scope code</span>&#x2002;
-									<xsl:call-template name="AnyCode"/>
+								<xsl:call-template name="AnyCode"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:hierarchyLevelName">
 							<dt>
-								<span class="element">Metadata hierarchy level name:
-									</span>&#x2003;<xsl:call-template name="CharacterString"/>
+								<span class="element">Metadata hierarchy level name: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:if test="gmd:hierarchyLevel | gmd:hierarchyLevelName">
@@ -242,13 +201,13 @@
 						<xsl:for-each select="gmd:language">
 							<dt>
 								<span class="element">Metadata language </span>&#x2002;
-									<xsl:call-template name="CharacterString"/>
+								<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:characterSet/gmd:MD_CharacterSetCode">
 							<dt>
-								<span class="element">Metadata character set encoding:
-								</span>&#x2002; <xsl:call-template name="AnyCode"/>
+								<span class="element">Metadata character set encoding: </span>&#x2002;
+								<xsl:call-template name="AnyCode"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:locale/gmd:PT_Locale">
@@ -261,11 +220,9 @@
 								<dd>
 									<xsl:for-each select="gmd:languageCode">
 										<dt>
-											<span class="element">Localization language:
-											</span>&#x2002; <xsl:call-template
-												name="CharacterString">
-												<xsl:with-param name="code"
-												select="gmd:LanguageCode/@codeListValue"/>
+											<span class="element">Localization language: </span>&#x2002;
+											<xsl:call-template name="CharacterString">
+												<xsl:with-param name="code" select="gmd:LanguageCode/@codeListValue"/>
 											</xsl:call-template>
 										</dt>
 									</xsl:for-each>
@@ -273,17 +230,13 @@
 										<dd>
 											<xsl:for-each select="gmd:country">
 												<dt>
-												<span class="element">Localization country:
-												</span>&#x2002;<xsl:apply-templates select="."
-												mode="arcgis"/>
+													<span class="element">Localization country: </span>&#x2002;<xsl:apply-templates select="." mode="arcgis"/>
 												</dt>
 											</xsl:for-each>
-											<xsl:for-each
-												select="gmd:characterEncoding/gmd:MD_CharacterSetCode">
+											<xsl:for-each select="gmd:characterEncoding/gmd:MD_CharacterSetCode">
 												<dt>
-												<span class="element">Localized character
-												encoding: </span>&#x2002; <xsl:call-template
-												name="AnyCode"/>
+													<span class="element">Localized character encoding: </span>&#x2002;
+													<xsl:call-template name="AnyCode"/>
 												</dt>
 											</xsl:for-each>
 										</dd>
@@ -299,14 +252,12 @@
 						</xsl:if>
 						<xsl:for-each select="gmd:metadataStandardName">
 							<dt>
-								<span class="element">Metadata standard for this record:
-									</span>&#x2003;<xsl:call-template name="CharacterString"/>
+								<span class="element">Metadata standard for this record: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:metadataStandardVersion">
 							<dt>
-								<span class="element">standard version:
-									</span>&#x2003;<xsl:call-template name="CharacterString"/>
+								<span class="element">standard version: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:if test="gmd:metadataStandardName | gmd:metadataStandardVersion">
@@ -315,20 +266,17 @@
 						</xsl:if>
 						<xsl:for-each select="gmd:fileIdentifier">
 							<dt>
-								<span class="element">Metadata record identifier:
-									</span>&#x2003;<xsl:call-template name="CharacterString"/>
+								<span class="element">Metadata record identifier: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:parentIdentifier">
 							<dt>
-								<span class="element">'Parent' metadata record identifier:
-									</span>&#x2003;<xsl:call-template name="CharacterString"/>
+								<span class="element">'Parent' metadata record identifier: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:dataSetURI">
 							<dt>
-								<span class="element">URI for dataset described:
-									></span>&#x2003;<xsl:call-template name="CharacterString"/>
+								<span class="element">URI for dataset described: ></span>&#x2003;<xsl:call-template name="CharacterString"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:if test="gmd:fileIdentifier | gmd:parentIdentifier | gmd:dataSetURI">
@@ -338,30 +286,11 @@
 					</dd>
 				</dl>
 				<a class="top" href="#Top">Back to top</a>
-				<!--		</xsl:template>-->
-
-			</xsl:if>
-
-		</div>		
-		<!-- id= container -->
-		<div>
-			<xsl:choose>
-			<xsl:when test="local-name()='MD_Metadata'">
-			<h3>Metadata record format is ISO19139 XML (MD_Metadata)</h3>
-			</xsl:when>
-				<xsl:when test="local-name()='MI_Metadata'">
-					<h3>Metadata record format is ISO19139-2 XML (MI_Metadata)</h3>
-				</xsl:when>
-				<xsl:otherwise>
-					<h3>Other metadata format: <xsl:value-of select="local-name()"/></h3>
-				</xsl:otherwise>
-			</xsl:choose>
-		</div>
+	<!--		</xsl:template>-->
+		
+		</xsl:if>
 	</xsl:template>
 	<!-- Generic template for displaying the TOC headings and links -->
-
-
-
 	<xsl:template name="TOC-HEADING">
 		<xsl:param name="nodes"/>
 		<xsl:param name="label"/>
@@ -370,8 +299,7 @@
 			<xsl:for-each select="$nodes">
 				<li>
 					<a>
-						<xsl:attribute name="href">#<xsl:value-of select="generate-id(./*[1])"
-							/></xsl:attribute>
+						<xsl:attribute name="href">#<xsl:value-of select="generate-id(./*[1])"/></xsl:attribute>
 						<xsl:value-of select="$label"/>
 					</a>
 				</li>
@@ -384,15 +312,14 @@
 			<xsl:for-each select="$nodes">
 				<li style="margin-left:0.5in">
 					<a>
-						<xsl:attribute name="href">#<xsl:value-of select="generate-id(./*[1])"
-							/></xsl:attribute>
+						<xsl:attribute name="href">#<xsl:value-of select="generate-id(./*[1])"/></xsl:attribute>
 						<xsl:value-of select="$sub-label"/>&#x20;<xsl:value-of select="position()"/>
 					</a>
 				</li>
 			</xsl:for-each>
 		</xsl:if>
 	</xsl:template>
-
+	
 	<!-- 2 letter language code list from ISO 639 : 1988, in alphabetic order by code -->
 	<xsl:template match="gmd:language | gmd:languageCode" mode="iso19139">
 		<xsl:if test="gco:CharacterString">
@@ -424,33 +351,30 @@
 				<dl>
 					<xsl:for-each select="gmd:dateOfNextUpdate">
 						<dt>
-							<span class="element">date of next update:
-								</span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
+							<span class="element">date of next update: </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:maintenanceAndUpdateFrequency">
 						<dt>
 							<span class="element">maintenance or update frequency: </span>&#x2002;
-								<xsl:for-each select="gmd:MD_MaintenanceFrequencyCode">
+        <xsl:for-each select="gmd:MD_MaintenanceFrequencyCode">
 								<xsl:call-template name="AnyCode"/>
 							</xsl:for-each>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:userDefinedMaintenanceFrequency/gts:TM_PeriodDuration">
 						<dt>
-							<span class="element"> Time Per Btw Update </span>&#x2002;<xsl:value-of
-								select="."/>
+							<span class="element"> Time Per Btw Update </span>&#x2002;<xsl:value-of select="."/>
 						</dt>
 					</xsl:for-each>
-					<xsl:if
-						test="gmd:dateOfNextUpdate | gmd:maintenanceAndUpdateFrequency | gmd:userDefinedMaintenanceFrequency">
+					<xsl:if test="gmd:dateOfNextUpdate | gmd:maintenanceAndUpdateFrequency | gmd:userDefinedMaintenanceFrequency">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
 					<xsl:for-each select="gmd:updateScope/gmd:MD_ScopeCode">
 						<dt>
-							<span class="element">update scope: </span>&#x2002; <xsl:call-template
-								name="AnyCode"/>
+							<span class="element">update scope: </span>&#x2002;
+			<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:updateScopeDescription">
@@ -461,11 +385,10 @@
 						</xsl:if>
 						<dl>
 							<dd>
-								<xsl:apply-templates select="gmd:MD_ScopeDescription"
-									mode="iso19139"/>
+								<xsl:apply-templates select="gmd:MD_ScopeDescription" mode="iso19139"/>
 							</dd>
 						</dl>
-						<xsl:if test="count(following-sibling::*) = 0">
+						<xsl:if test="count (following-sibling::*) = 0">
 							<!-- <br/> -->
 						</xsl:if>
 					</xsl:for-each>
@@ -475,8 +398,7 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:maintenanceNote">
 						<dt>
-							<span class="element">notes: </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">notes: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
@@ -529,38 +451,32 @@
 				<!--<dt><span class="element"><res:idScopeDesc/></span></dt> -->
 				<xsl:for-each select="gmd:attributes">
 					<dt>
-						<span class="element">attributes described </span>&#x2002;<xsl:value-of
-							select="@uuidref"/>
+						<span class="element">attributes described </span>&#x2002;<xsl:value-of select="@uuidref"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:features">
 					<dt>
-						<span class="element">feature types described </span>&#x2002;<xsl:value-of
-							select="@uuidref"/>
+						<span class="element">feature types described </span>&#x2002;<xsl:value-of select="@uuidref"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:featureInstances">
 					<dt>
-						<span class="element">feature instances described
-							</span>&#x2002;<xsl:value-of select="@uuidref"/>
+						<span class="element">feature instances described </span>&#x2002;<xsl:value-of select="@uuidref"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:attributeInstances">
 					<dt>
-						<span class="element">attribute instances described
-							</span>&#x2002;<xsl:value-of select="@uuidref"/>
+						<span class="element">attribute instances described </span>&#x2002;<xsl:value-of select="@uuidref"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:dataset">
 					<dt>
-						<span class="element">dataset described: </span>&#x2002;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element">dataset described: </span>&#x2002;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:other">
 					<dt>
-						<span class="element">other component described
-							</span>&#x2002;<xsl:call-template name="CharacterString"/>
+						<span class="element">other component described </span>&#x2002;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 			</dd>
@@ -600,10 +516,10 @@
 				<dl>
 					<xsl:if test="gmd:accessConstraints">
 						<dt>
-							<span class="element">Access Constraints </span>&#x2002; <xsl:for-each
-								select="gmd:accessConstraints/gmd:MD_RestrictionCode">
+							<span class="element">Access Constraints </span>&#x2002;
+        <xsl:for-each select="gmd:accessConstraints/gmd:MD_RestrictionCode">
 								<xsl:call-template name="AnyCode"/>
-								<xsl:if test="not(position() = last())">, </xsl:if>
+								<xsl:if test="not(position()=last())">, </xsl:if>
 							</xsl:for-each>
 						</dt>
 						<!-- <br/> -->
@@ -611,10 +527,10 @@
 					</xsl:if>
 					<xsl:if test="gmd:useConstraints">
 						<dt>
-							<span class="element">use constraint: </span>&#x2002; <xsl:for-each
-								select="gmd:useConstraints/gmd:MD_RestrictionCode">
+							<span class="element">use constraint: </span>&#x2002;
+        <xsl:for-each select="gmd:useConstraints/gmd:MD_RestrictionCode">
 								<xsl:call-template name="AnyCode"/>
-								<xsl:if test="not(position() = last())">, </xsl:if>
+								<xsl:if test="not(position()=last())">, </xsl:if>
 							</xsl:for-each>
 						</dt>
 						<!-- <br/> -->
@@ -670,14 +586,13 @@
 				<dl>
 					<xsl:for-each select="gmd:classification/gmd:MD_ClassificationCode">
 						<dt>
-							<span class="element">Classification</span>&#x2002; <xsl:call-template
-								name="AnyCode"/>
+							<span class="element">Classification</span>&#x2002;
+        	<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:classificationSystem">
 						<dt>
-							<span class="element">Classification
-								System</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Classification System</span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:classification | gmd:classificationSystem">
@@ -686,17 +601,14 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:userNote">
 						<dt>
-							<span class="element">Note</span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">Note</span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:for-each>
 					<xsl:for-each select="gmd:handlingDescription">
 						<dt>
-							<span class="element">Handling
-								Description</span>&#x2003;<xsl:call-template name="CharacterString"
-							/>
+							<span class="element">Handling Description</span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
@@ -722,12 +634,8 @@
 	<!-- DTD doesn't account for data and service subclasses of MD_Identification -->
 	<xsl:template match="gmd:MD_DataIdentification | srv:SV_ServiceIdentification" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<xsl:if test="not(name(..) = 'srv:operatesOn')">
 				<hr/>
 			</xsl:if>
@@ -738,31 +646,29 @@
 					<span class="element">Service operates on:</span>
 				</dt>
 			</xsl:when>
-			<xsl:when
-				test="(local-name(.) = 'MD_DataIdentification') and (count(../../*[gmd:MD_DataIdentification]) = 1)">
+			<xsl:when test="(local-name(.) = 'MD_DataIdentification') and (count (../../*[gmd:MD_DataIdentification]) = 1)">
 				<dt>
 					<h2>Dataset Identification:</h2>
 				</dt>
 			</xsl:when>
-			<xsl:when
-				test="(local-name(.) = 'MD_DataIdentification') and (count(../../*[gmd:MD_DataIdentification]) &gt; 1)">
+			<xsl:when test="(local-name(.) = 'MD_DataIdentification') and (count (../../*[gmd:MD_DataIdentification]) &gt; 1)">
 				<dt>
-					<h2>Dataset identification <xsl:for-each select="..">
+					<h2>Dataset identification
+				<xsl:for-each select="..">
 							<xsl:value-of select="position()"/>
 						</xsl:for-each>
 					</h2>
 				</dt>
 			</xsl:when>
-			<xsl:when
-				test="(local-name(.) = 'SV_ServiceIdentification') and (count(../../*[srv:SV_ServiceIdentification]) = 1)">
+			<xsl:when test="(local-name(.) = 'SV_ServiceIdentification') and (count (../../*[srv:SV_ServiceIdentification]) =  1)">
 				<dt>
 					<h2>Service identification information</h2>
 				</dt>
 			</xsl:when>
-			<xsl:when
-				test="(local-name(.) = 'SV_ServiceIdentification') and (count(../../*[srv:SV_ServiceIdentification]) &gt; 1)">
+			<xsl:when test="(local-name(.) = 'SV_ServiceIdentification') and (count (../../*[srv:SV_ServiceIdentification]) &gt; 1)">
 				<dt>
-					<h2>Service Identification information: <xsl:for-each select="..">
+					<h2>Service Identification information: 
+				<xsl:for-each select="..">
 							<xsl:value-of select="position()"/>
 						</xsl:for-each>
 					</h2>
@@ -786,26 +692,18 @@
 				<xsl:apply-templates select="gmd:citation/gmd:CI_Citation" mode="iso19139"/>
 				<xsl:if test="gmd:topicCategory[gmd:MD_TopicCategoryCode]">
 					<dt>
-						<span class="element">Topic Category: </span>&#x2002; <xsl:for-each
-							select="gmd:topicCategory">
+						<span class="element">Topic Category: </span>&#x2002;
+      <xsl:for-each select="gmd:topicCategory">
 							<xsl:value-of select="gmd:MD_TopicCategoryCode"/>
-							<xsl:if test="not(position() = last())">, </xsl:if>
+							<xsl:if test="not(position()=last())">, </xsl:if>
 						</xsl:for-each>
 					</dt>
-					<xsl:if test="count(following-sibling::*) = 0">
+					<xsl:if test="count (following-sibling::*) = 0">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
 				</xsl:if>
-				
-				<xsl:if test="gmd:descriptiveKeywords//gmd:keyword">
-				<dt><span class="element">Keywords: </span></dt>
-				<ul style="margin-top: 0px; padding-left: 20px;">
-				<xsl:apply-templates select="gmd:descriptiveKeywords/gmd:MD_Keywords"
-					mode="iso19139"/>
-				</ul>
-				</xsl:if>
-					
+				<xsl:apply-templates select="gmd:descriptiveKeywords/gmd:MD_Keywords" mode="iso19139"/>
 				<xsl:for-each select="gmd:purpose">
 					<dt>
 						<span class="element">purpose: </span>
@@ -821,43 +719,36 @@
 				<xsl:for-each select="srv:serviceType">
 					<!-- NOTE: will match gco:LocalName and gco:ScopedName -->
 					<dt>
-						<span class="element">Service type: </span>&#x2003;<xsl:value-of select="*"
-						/>
+						<span class="element">Service type: </span>&#x2003;<xsl:value-of select="*"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="srv:serviceType/*/@codeSpace">
 					<dl>
 						<dd>
-							<span class="element">Service type codespace:
-								</span>&#x2003;<xsl:value-of select="."/>
+							<span class="element">Service type codespace: </span>&#x2003;<xsl:value-of select="."/>
 						</dd>
 					</dl>
 				</xsl:for-each>
 				<xsl:for-each select="srv:serviceTypeVersion">
 					<dt>
-						<span class="element">Service type verstion</span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element">Service type verstion</span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
-				<xsl:apply-templates select="srv:accessProperties/gmd:MD_StandardOrderProcess"
-					mode="iso19139"/>
-				<xsl:if
-					test="(srv:serviceType or srv:serviceTypeVersion) and not(srv:accessProperties)">
+				<xsl:apply-templates select="srv:accessProperties/gmd:MD_StandardOrderProcess" mode="iso19139"/>
+				<xsl:if test="(srv:serviceType or srv:serviceTypeVersion) and not(srv:accessProperties)">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
-				<xsl:apply-templates select="gmd:graphicOverview/gmd:MD_BrowseGraphic"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:graphicOverview/gmd:MD_BrowseGraphic" mode="iso19139"/>
 				<xsl:for-each select="gmd:language">
 					<dt>
-						<span class="element">Resource language: </span>&#x2002; <xsl:call-template
-							name="CharacterString"/>
+						<span class="element">Resource language: </span>&#x2002;
+          <xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:characterSet/gmd:MD_CharacterSetCode">
 					<dt>
-						<span class="element">Character set encoding of resource:
-							</span>&#x2002;<xsl:call-template name="AnyCode"/>
+						<span class="element">Character set encoding of resource: </span>&#x2002;<xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:if test="gmd:language | gmd:characterSet">
@@ -867,7 +758,7 @@
 				<xsl:for-each select="gmd:status/gmd:MD_ProgressCode">
 					<dt>
 						<span class="element">Resource progress code: </span>&#x2002;
-							<xsl:call-template name="AnyCode"/>
+        <xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:apply-templates select="gmd:resourceMaintenance" mode="iso19139"/>
@@ -883,11 +774,10 @@
 					</dl>
 				</xsl:for-each>
 				<xsl:apply-templates select="gmd:resourceSpecificUsage/gmd:MD_Usage" mode="iso19139"/>
-				<xsl:for-each
-					select="gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode">
+				<xsl:for-each select="gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode">
 					<dt>
 						<span class="element">Spatial representation type code: </span>&#x2002;
-							<xsl:call-template name="AnyCode"/>
+        <xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:apply-templates select="gmd:resourceFormat/gmd:MD_Format" mode="iso19139"/>
@@ -897,14 +787,12 @@
 				</xsl:if>
 				<xsl:for-each select="gmd:environmentDescription">
 					<dt>
-						<span class="element">Processing environment:
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element">Processing environment: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:for-each>
-				<xsl:apply-templates select="gmd:spatialResolution/gmd:MD_Resolution"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:spatialResolution/gmd:MD_Resolution" mode="iso19139"/>
 				<xsl:apply-templates select="gmd:extent/gmd:EX_Extent" mode="iso19139"/>
 				<xsl:apply-templates select="srv:extent/gmd:EX_Extent" mode="iso19139"/>
 				<xsl:for-each select="gmd:supplementalInformation">
@@ -931,8 +819,7 @@
 						</dd>
 					</dl>
 				</xsl:for-each>
-				<xsl:apply-templates select="gmd:pointOfContact/gmd:CI_ResponsibleParty"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:pointOfContact/gmd:CI_ResponsibleParty" mode="iso19139"/>
 				<xsl:for-each select="srv:coupledResource/srv:SV_CoupledResource">
 					<dt>
 						<span class="element">Coupled resources associated with service: </span>
@@ -941,14 +828,12 @@
 						<dd>
 							<xsl:for-each select="srv:operationName">
 								<dt>
-									<span class="element">Operation name:
-										</span>&#x2003;<xsl:call-template name="CharacterString"/>
+									<span class="element">Operation name: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 								</dt>
 							</xsl:for-each>
 							<xsl:for-each select="srv:identifier">
 								<dt>
-									<span class="element">Service identifier:
-										</span>&#x2003;<xsl:call-template name="CharacterString"/>
+									<span class="element">Service identifier: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 								</dt>
 							</xsl:for-each>
 						</dd>
@@ -958,15 +843,13 @@
 				<xsl:for-each select="srv:couplingType/srv:SV_CouplingType">
 					<dt>
 						<span class="element">Coupling between service and dataset: </span>&#x2003;
-							<xsl:call-template name="AnyCode"/>
+        <xsl:call-template name="AnyCode"/>
 					</dt>
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:for-each>
-				<xsl:apply-templates select="srv:containsOperations/srv:SV_OperationMetadata"
-					mode="iso19139"/>
-				<xsl:apply-templates select="srv:operatesOn/gmd:MD_DataIdentification"
-					mode="iso19139"/>
+				<xsl:apply-templates select="srv:containsOperations/srv:SV_OperationMetadata" mode="iso19139"/>
+				<xsl:apply-templates select="srv:operatesOn/gmd:MD_DataIdentification" mode="iso19139"/>
 			</dd>
 		</dl>
 		<xsl:if test="not(name(..) = 'srv:operatesOn')">
@@ -975,53 +858,37 @@
 	</xsl:template>
 	<!-- Keyword Information (B.2.2.2 MD_Keywords - line52)-->
 	<xsl:template match="gmd:MD_Keywords" mode="iso19139">
-			<dd>
+		<dd>
 			<xsl:choose>
-				<xsl:when
-					test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue = '001' or @codeListValue = 'discipline']">
+				<xsl:when test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue='001' or @codeListValue='discipline']">
 					<dt>
 						<span class="element">Discipline keywords: </span>
 					</dt>
 				</xsl:when>
-				<xsl:when
-					test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue = '002' or @codeListValue = 'place']">
+				<xsl:when test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue='002' or @codeListValue='place']">
 					<dt>
 						<span class="element">Location keywords: </span>
 					</dt>
 				</xsl:when>
-				<xsl:when
-					test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue = '003' or @codeListValue = 'stratum']">
+				<xsl:when test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue='003' or @codeListValue='stratum']">
 					<dt>
 						<span class="element">Stratum keywords: </span>
 					</dt>
 				</xsl:when>
-				<xsl:when
-					test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue = '004' or @codeListValue = 'temporal']">
+				<xsl:when test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue='004' or @codeListValue='temporal']">
 					<dt>
 						<span class="element">Temporal keywords: </span>
 					</dt>
 				</xsl:when>
-				<xsl:when
-					test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue = '005' or @codeListValue = 'theme']">
-					<xsl:choose>
-					<xsl:when test="string-length(gmd:type/gmd:MD_KeywordTypeCode[@codeListValue = '005' or @codeListValue = 'theme']/text())>0">
-						<dt>
-							<span class="element">Theme keywords (<xsl:value-of select="gmd:type/gmd:MD_KeywordTypeCode"/>): </span>
-						</dt>
-					</xsl:when>
-						<xsl:otherwise>
-							<dt>
-								<span class="element">Theme keywords: </span>
-							</dt>
-						</xsl:otherwise>
-					</xsl:choose>
-					
+				<xsl:when test="gmd:type/gmd:MD_KeywordTypeCode[@codeListValue='005' or @codeListValue='theme']">
+					<dt>
+						<span class="element">Theme keywords: </span>
+					</dt>
 				</xsl:when>
 				<xsl:otherwise>
 					<dt>
 						<span class="element">
-							<xsl:value-of select="gmd:type/gmd:MD_KeywordTypeCode/@codeListValue"/>
-							Keywords</span>
+							<xsl:value-of select="gmd:type/gmd:MD_KeywordTypeCode/@codeListValue"/> Keywords</span>
 					</dt>
 				</xsl:otherwise>
 			</xsl:choose>
@@ -1033,14 +900,13 @@
 								<xsl:if test="position() = 1">
 									<span class="element">keyword term: </span>&#x2003;</xsl:if>
 								<xsl:call-template name="CharacterString"/>
-								<xsl:if test="not(position() = last())">, </xsl:if>
+								<xsl:if test="not(position()=last())">, </xsl:if>
 							</xsl:for-each>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
-					<xsl:apply-templates select="gmd:thesaurusName/gmd:CI_Citation" mode="iso19139"
-					/>
+					<xsl:apply-templates select="gmd:thesaurusName/gmd:CI_Citation" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -1055,24 +921,20 @@
 				<dl>
 					<xsl:for-each select="gmd:fileName">
 						<dt>
-							<span class="element">thumbnail file name:
-								</span>&#x2003;<xsl:call-template name="urlType">
-								<xsl:with-param name="value"
-									select="normalize-space(gco:CharacterString)"/>
+							<span class="element">thumbnail file name: </span>&#x2003;<xsl:call-template name="urlType">
+								<xsl:with-param name="value" select="normalize-space(gco:CharacterString)"/>
 								<!-- SMR fix: the fileName string is in a characterSTring element; the template is expecting a string -->
 							</xsl:call-template>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:fileType">
 						<dt>
-							<span class="element">file type: </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">file type: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:fileDescription">
 						<dt>
-							<span class="element">thumbnail file description:
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">thumbnail file description: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 				</dl>
@@ -1090,14 +952,12 @@
 				<dl>
 					<xsl:for-each select="gmd:usageDateTime">
 						<dt>
-							<span class="element">Date used: </span>&#x2002;<xsl:call-template
-								name="Date_PropertyType"/>
+							<span class="element">Date used: </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:specificUsage">
 						<dt>
-							<span class="element">Usage description:
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Usage description: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:usageDateTime | gmd:specificUsage">
@@ -1106,14 +966,12 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:userDeterminedLimitations">
 						<dt>
-							<span class="element">Usage comments: </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">Usage comments: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:userContactInfo/gmd:CI_ResponsibleParty"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:userContactInfo/gmd:CI_ResponsibleParty" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -1126,12 +984,10 @@
 			</dt>
 			<dd>
 				<dl>
-					<xsl:apply-templates select="gmd:equivalentScale/gmd:MD_RepresentativeFraction"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:equivalentScale/gmd:MD_RepresentativeFraction" mode="iso19139"/>
 					<xsl:for-each select="gmd:distance/gco:Distance">
 						<dt>
-							<span class="element">Ground sampling distance:
-								</span>&#x2002;<xsl:apply-templates select="." mode="iso19139"/>
+							<span class="element">Ground sampling distance: </span>&#x2002;<xsl:apply-templates select="." mode="iso19139"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
@@ -1149,8 +1005,7 @@
 			<dl>
 				<xsl:for-each select="gmd:denominator">
 					<dt>
-						<span class="element">Scale denominator: </span>&#x2002;<xsl:call-template
-							name="Integer"/>
+						<span class="element">Scale denominator: </span>&#x2002;<xsl:call-template name="Integer"/>
 					</dt>
 				</xsl:for-each>
 			</dl>
@@ -1167,33 +1022,28 @@
 				<dl>
 					<xsl:for-each select="srv:operationName">
 						<dt>
-							<span class="element">Operation name: </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">Operation name: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:operationDescription">
 						<dt>
-							<span class="element">Operation description:
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Operation description: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:invocationName">
 						<dt>
-							<span class="element">Name for invoking operation:
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Name for invoking operation: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:DCP/srv:DCPList">
 						<dt>
-							<span class="element">Service distributed computing platform type:
-							</span>&#x2003; <xsl:call-template name="AnyCode"/>
+							<span class="element">Service distributed computing platform type: </span>&#x2003;
+			<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
-					<xsl:apply-templates select="srv:connectPoint/gmd:CI_OnlineResource"
-						mode="iso19139"/>
+					<xsl:apply-templates select="srv:connectPoint/gmd:CI_OnlineResource" mode="iso19139"/>
 					<xsl:apply-templates select="srv:parameters/srv:SV_Parameter" mode="iso19139"/>
-					<xsl:apply-templates select="srv:dependsOn/srv:SV_OperationMetadata"
-						mode="iso19139"/>
+					<xsl:apply-templates select="srv:dependsOn/srv:SV_OperationMetadata" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -1213,32 +1063,27 @@
 					</xsl:if>
 					<xsl:for-each select="srv:description">
 						<dt>
-							<span class="element">Parameter description:
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Parameter description: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:direction/srv:SV_ParameterDirection">
 						<dt>
-							<span class="element">Parameter direction: </span>&#x2003;<xsl:value-of
-								select="."/>
+							<span class="element">Parameter direction: </span>&#x2003;<xsl:value-of select="."/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:optionality">
 						<dt>
-							<span class="element">Parameter optionality:
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Parameter optionality: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:repeatability">
 						<dt>
-							<span class="element">Parameter repeatability:
-								</span>&#x2003;<xsl:call-template name="Boolean"/>
+							<span class="element">Parameter repeatability: </span>&#x2003;<xsl:call-template name="Boolean"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="srv:valueType/gco:TypeName/gco:aName">
 						<dt>
-							<span class="element">value type: </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">value type: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 				</dl>
@@ -1291,8 +1136,7 @@
 	<xsl:template name="MD_GridSpatialRepresentation">
 		<xsl:for-each select="gmd:numberOfDimensions">
 			<dt>
-				<span class="element">number of grid dimensions: </span>&#x2002;<xsl:call-template
-					name="Integer"/>
+				<span class="element">number of grid dimensions: </span>&#x2002;<xsl:call-template name="Integer"/>
 			</dt>
 		</xsl:for-each>
 		<dd>
@@ -1301,36 +1145,31 @@
 			</dt>
 			<dd>
 				<dl>
-					<xsl:apply-templates select="gmd:axisDimensionProperties/gmd:MD_Dimension"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:axisDimensionProperties/gmd:MD_Dimension" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
 		<xsl:for-each select="gmd:cellGeometry/gmd:MD_CellGeometryCode">
 			<dt>
-				<span class="element">cell geometry type: </span>&#x2002; <xsl:call-template
-					name="AnyCode"/>
+				<span class="element">cell geometry type: </span>&#x2002;
+			<xsl:call-template name="AnyCode"/>
 			</dt>
 		</xsl:for-each>
 		<xsl:for-each select="gmd:transformationParameterAvailability">
 			<dt>
 				<span class="element">transformation parameter availability: </span>&#x2002;
-					<xsl:call-template name="Boolean"/>
+			<xsl:call-template name="Boolean"/>
 			</dt>
 		</xsl:for-each>
-		<xsl:if test="gmd:numberOfDimensions and not(gmd:axisDimensionProperties)">
+		<xsl:if test="gmd:numberOfDimensions and not (gmd:axisDimensionProperties)">
 			<!-- <br/> -->
 		</xsl:if>
 	</xsl:template>
 	<!-- Grid Information (B.2.6  MD_GridSpatialRepresentation - line157 -->
 	<xsl:template match="gmd:MD_GridSpatialRepresentation" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1346,12 +1185,8 @@
 	</xsl:template>
 	<xsl:template match="gmd:MD_Georectified" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1362,8 +1197,7 @@
 				<xsl:call-template name="MD_GridSpatialRepresentation"/>
 				<xsl:for-each select="gmd:pointInPixel/gmd:MD_PixelOrientationCode">
 					<dt>
-						<span class="element">point position in pixel:
-							</span>&#x2002;<xsl:call-template name="AnyCode"/>
+						<span class="element">point position in pixel: </span>&#x2002;<xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:if test="gmd:cellGeometry | gmd:pointInPixel">
@@ -1372,31 +1206,26 @@
 				</xsl:if>
 				<xsl:for-each select="gmd:transformationDimensionDescription">
 					<dt>
-						<span class="element">transformation dimension description:
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element">transformation dimension description: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:transformationDimensionMapping">
 					<dt>
-						<span class="element">transformation Dimension Mapping
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element">transformation Dimension Mapping </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
-				<xsl:if
-					test="gmd:transformationParameterAvailability | gmd:transformationDimensionDescription | gmd:transformationDimensionMapping">
+				<xsl:if test="gmd:transformationParameterAvailability | gmd:transformationDimensionDescription | gmd:transformationDimensionMapping">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
 				<xsl:for-each select="gmd:checkPointAvailability">
 					<dt>
-						<span class="element"> check Point Availability
-							</span>&#x2002;<xsl:call-template name="Boolean"/>
+						<span class="element"> check Point Availability </span>&#x2002;<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:checkPointDescription">
 					<dt>
-						<span class="element"> check Point Description
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element"> check Point Description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:if test="gmd:cornerPoints">
@@ -1407,9 +1236,7 @@
 						<dl>
 							<xsl:for-each select="gmd:cornerPoints/gml:Point">
 								<dt>
-									<span class="element"> Coordinates
-										</span>&#x2002;<xsl:apply-templates select="."
-										mode="iso19139"/>
+									<span class="element"> Coordinates </span>&#x2002;<xsl:apply-templates select="." mode="iso19139"/>
 								</dt>
 								<!-- <br/> -->
 								<!-- <br/> -->
@@ -1425,9 +1252,7 @@
 						<dl>
 							<xsl:for-each select="gml:Point">
 								<dt>
-									<span class="element"> Coordinates
-										</span>&#x2002;<xsl:apply-templates select="."
-										mode="iso19139"/>
+									<span class="element"> Coordinates </span>&#x2002;<xsl:apply-templates select="." mode="iso19139"/>
 								</dt>
 								<!-- <br/> -->
 								<!-- <br/> -->
@@ -1435,8 +1260,7 @@
 						</dl>
 					</dd>
 				</xsl:for-each>
-				<xsl:if
-					test="gmd:checkPointAvailability | gmd:checkPointDescription | gmd:cornerPoints | gmd:centerPoint">
+				<xsl:if test="gmd:checkPointAvailability | gmd:checkPointDescription | gmd:cornerPoints | gmd:centerPoint">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
@@ -1446,12 +1270,8 @@
 	</xsl:template>
 	<xsl:template match="gmd:MD_Georeferenceable" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1462,35 +1282,30 @@
 				<xsl:call-template name="MD_GridSpatialRepresentation"/>
 				<xsl:for-each select="gmd:controlPointAvailability">
 					<dt>
-						<span class="element">Control Point Availability
-							</span>&#x2002;<xsl:call-template name="Boolean"/>
+						<span class="element">Control Point Availability </span>&#x2002;<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:orientationParameterAvailability">
 					<dt>
-						<span class="element"> orientation Parameter Availability
-							</span>&#x2002;<xsl:call-template name="Boolean"/>
+						<span class="element"> orientation Parameter Availability </span>&#x2002;<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:orientationParameterDescription">
 					<dt>
-						<span class="element"> orientation Parameter Description
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element"> orientation Parameter Description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
-				<xsl:if
-					test="gmd:controlPointAvailability | gmd:orientationParameterAvailability | gmd:orientationParameterDescription">
+				<xsl:if test="gmd:controlPointAvailability | gmd:orientationParameterAvailability | gmd:orientationParameterDescription">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
 				<xsl:for-each select="gmd:georeferencedParameters">
 					<dt>
-						<span class="element"> georeferenced Parameters
-							</span>&#x2002;<xsl:call-template name="Record"/>
+						<span class="element"> georeferenced Parameters </span>&#x2002;<xsl:call-template name="Record"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:apply-templates select="gmd:parameterCitation/gmd:CI_Citation" mode="iso19139"/>
-				<xsl:if test="gmd:georeferencedParameters and not(gmd:parameterCitation)">
+				<xsl:if test="gmd:georeferencedParameters and not (gmd:parameterCitation)">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
@@ -1509,14 +1324,13 @@
 			<dl>
 				<xsl:for-each select="gmd:dimensionName/gmd:MD_DimensionNameTypeCode">
 					<dt>
-						<span class="element">Dimension Name: </span>&#x2002; <xsl:call-template
-							name="AnyCode"/>
+						<span class="element">Dimension Name: </span>&#x2002;
+							<xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:dimensionSize">
 					<dt>
-						<span class="element">Dimension Size </span>&#x2002;<xsl:call-template
-							name="Integer"/>
+						<span class="element">Dimension Size </span>&#x2002;<xsl:call-template name="Integer"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:resolution/gco:Measure">
@@ -1525,8 +1339,7 @@
 					</dt>
 					<dl>
 						<dt>
-							<span class="element"> Distance </span>&#x2002;<xsl:apply-templates
-								select="." mode="iso19139"/>
+							<span class="element"> Distance </span>&#x2002;<xsl:apply-templates select="." mode="iso19139"/>
 						</dt>
 					</dl>
 				</xsl:for-each>
@@ -1538,12 +1351,8 @@
 	<!-- Vector Information (B.2.6  MD_VectorSpatialRepresentation - line176) -->
 	<xsl:template match="gmd:MD_VectorSpatialRepresentation" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1553,13 +1362,12 @@
 			<dd>
 				<xsl:for-each select="gmd:topologyLevel/gmd:MD_TopologyLevelCode">
 					<dt>
-						<span class="element">Topology Level </span>&#x2002; <xsl:call-template
-							name="AnyCode"/>
+						<span class="element">Topology Level </span>&#x2002;
+			<xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
-				<xsl:apply-templates select="gmd:geometricObjects/gmd:MD_GeometricObjects"
-					mode="iso19139"/>
-				<xsl:if test="gmd:topologyLevel and not(gmd:geometricObjects)">
+				<xsl:apply-templates select="gmd:geometricObjects/gmd:MD_GeometricObjects" mode="iso19139"/>
+				<xsl:if test="gmd:topologyLevel and not (gmd:geometricObjects)">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
@@ -1578,14 +1386,12 @@
 				<dl>
 					<xsl:for-each select="gmd:geometricObjectType/gmd:MD_GeometricObjectTypeCode">
 						<dt>
-							<span class="element"> geometric Object Type
-								</span>&#x2002;<xsl:call-template name="AnyCode"/>
+							<span class="element"> geometric Object Type </span>&#x2002;<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:geometricObjectCount">
 						<dt>
-							<span class="element"> geometric Object Count
-								</span>&#x2002;<xsl:call-template name="Integer"/>
+							<span class="element"> geometric Object Count </span>&#x2002;<xsl:call-template name="Integer"/>
 						</dt>
 					</xsl:for-each>
 				</dl>
@@ -1603,14 +1409,12 @@
 			<dd>
 				<xsl:for-each select="gmd:codeSpace">
 					<dt>
-						<span class="element"> Identifier code space:
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element"> Identifier code space: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:version">
 					<dt>
-						<span class="element">Version </span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element">Version </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 			</dd>
@@ -1634,12 +1438,11 @@
 			<dd>
 				<xsl:for-each select="gmd:code">
 					<dt>
-						<span class="element">Identifier string: </span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element">Identifier string: </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:apply-templates select="gmd:authority/gmd:CI_Citation" mode="iso19139"/>
-				<xsl:if test="(gmd:code) and not(gmd:authority)">
+				<xsl:if test="(gmd:code) and not (gmd:authority)">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
@@ -1651,16 +1454,15 @@
 	<xsl:template name="MD_CoverageDescription">
 		<xsl:for-each select="gmd:contentType">
 			<dt>
-				<span class="element">Type of coverage content </span>&#x2002; <xsl:for-each
-					select="gmd:MD_CoverageContentTypeCode">
+				<span class="element">Type of coverage content </span>&#x2002;
+			<xsl:for-each select="gmd:MD_CoverageContentTypeCode">
 					<xsl:call-template name="AnyCode"/>
 				</xsl:for-each>
 			</dt>
 		</xsl:for-each>
 		<xsl:for-each select="gmd:attributeDescription">
 			<dt>
-				<span class="element">Cell value attribute description:
-					</span>&#x2002;<xsl:call-template name="RecordType"/>
+				<span class="element">Cell value attribute description: </span>&#x2002;<xsl:call-template name="RecordType"/>
 			</dt>
 		</xsl:for-each>
 		<xsl:if test="gmd:contentType | gmd:attributeDescription">
@@ -1672,12 +1474,8 @@
 	<!-- Feature Catalogue Description (B.2.8 MD_FeatureCatalogueDescription - line233) -->
 	<xsl:template match="gmd:MD_FeatureCatalogueDescription" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1687,20 +1485,20 @@
 			<dd>
 				<xsl:for-each select="gmd:language">
 					<dt>
-						<span class="element">catalog language </span>&#x2002; <xsl:apply-templates
-							select="." mode="iso19139"/>
+						<span class="element">catalog language </span>&#x2002;
+			<xsl:apply-templates select="." mode="iso19139"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:includedWithDataset">
 					<dt>
 						<span class="element">Included With Dataset </span>&#x2002;
-							<xsl:call-template name="Boolean"/>
+        	<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:complianceCode">
 					<dt>
-						<span class="element">Compliance Code </span>&#x2002; <xsl:call-template
-							name="Boolean"/>
+						<span class="element">Compliance Code </span>&#x2002;
+        	<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:if test="gmd:language | gmd:includedWithDataset | gmd:complianceCode">
@@ -1716,14 +1514,12 @@
 					<xsl:for-each select="gmd:featureTypes/*/@codeSpace">
 						<dl>
 							<dd>
-								<span class="element">codespace: </span>&#x2003;<xsl:value-of
-									select="."/>
+								<span class="element">codespace: </span>&#x2003;<xsl:value-of select="."/>
 							</dd>
 						</dl>
 					</xsl:for-each>
 				</xsl:for-each>
-				<xsl:apply-templates select="gmd:featureCatalogueCitation/CI_Citation"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:featureCatalogueCitation/CI_Citation" mode="iso19139"/>
 			</dd>
 		</dl>
 		<a class="top" href="#Top">Back to top</a>
@@ -1731,12 +1527,8 @@
 	<!-- Coverage Description (B.2.8 MD_CoverageDescription - line239) -->
 	<xsl:template match="gmd:MD_CoverageDescription" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1774,8 +1566,7 @@
 				<dl>
 					<xsl:for-each select="*/gmd:descriptor">
 						<dt>
-							<span class="element"> descriptor </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> descriptor </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="*/gmd:sequenceIdentifier/gco:MemberName">
@@ -1787,60 +1578,50 @@
 					<xsl:for-each select="gmd:MD_Band">
 						<xsl:for-each select="gmd:maxValue">
 							<dt>
-								<span class="element"> Long Wavelength
-									</span>&#x2002;<xsl:call-template name="Real"/>
+								<span class="element"> Long Wavelength </span>&#x2002;<xsl:call-template name="Real"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:minValue">
 							<dt>
-								<span class="element"> Short Wavelength
-									</span>&#x2002;<xsl:call-template name="Real"/>
+								<span class="element"> Short Wavelength </span>&#x2002;<xsl:call-template name="Real"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:peakResponse">
 							<dt>
-								<span class="element">Peak response
-									</span>&#x2002;<xsl:call-template name="Real"/>
+								<span class="element">Peak response </span>&#x2002;<xsl:call-template name="Real"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:if test="gmd:units">
 							<dt>
 								<span class="element"> units </span>
 							</dt>
-							<xsl:apply-templates select="gmd:units/gml:UnitDefinition"
-								mode="iso19139"/>
+							<xsl:apply-templates select="gmd:units/gml:UnitDefinition" mode="iso19139"/>
 						</xsl:if>
-						<xsl:if
-							test="(gmd:maxValue | gmd:minValue | gmd:peakResponse) and not(gmd:units)">
+						<xsl:if test="(gmd:maxValue | gmd:minValue | gmd:peakResponse) and not (gmd:units)">
 							<!-- <br/> -->
 							<!-- <br/> -->
 						</xsl:if>
 						<xsl:for-each select="gmd:bitsPerValue">
 							<dt>
-								<span class="element"> bits Per Value
-									</span>&#x2002;<xsl:call-template name="Integer"/>
+								<span class="element"> bits Per Value </span>&#x2002;<xsl:call-template name="Integer"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:toneGradation">
 							<dt>
-								<span class="element"> tone Gradation
-									</span>&#x2002;<xsl:call-template name="Integer"/>
+								<span class="element"> tone Gradation </span>&#x2002;<xsl:call-template name="Integer"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:scaleFactor">
 							<dt>
-								<span class="element"> scale Factor
-									</span>&#x2002;<xsl:call-template name="Real"/>
+								<span class="element"> scale Factor </span>&#x2002;<xsl:call-template name="Real"/>
 							</dt>
 						</xsl:for-each>
 						<xsl:for-each select="gmd:offset">
 							<dt>
-								<span class="element"> offset </span>&#x2002;<xsl:call-template
-									name="Real"/>
+								<span class="element"> offset </span>&#x2002;<xsl:call-template name="Real"/>
 							</dt>
 						</xsl:for-each>
-						<xsl:if
-							test="gmd:bitsPerValue | gmd:toneGradation | gmd:scaleFactor | gmd:offset">
+						<xsl:if test="gmd:bitsPerValue | gmd:toneGradation | gmd:scaleFactor | gmd:offset">
 							<!-- <br/> -->
 							<!-- <br/> -->
 						</xsl:if>
@@ -1873,8 +1654,7 @@
       </xsl:for-each>-->
 				<xsl:for-each select="gco:aName">
 					<dt>
-						<span class="element">name </span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element">name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gco:attributeType/gco:TypeName">
@@ -1885,8 +1665,7 @@
 						<dl>
 							<xsl:for-each select="gco:aName">
 								<dt>
-									<span class="element"> Name </span>&#x2003;<xsl:call-template
-										name="CharacterString"/>
+									<span class="element"> Name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 								</dt>
 							</xsl:for-each>
 						</dl>
@@ -1899,12 +1678,8 @@
 	<!-- Image Description (B.2.8 MD_ImageDescription - line243) -->
 	<xsl:template match="gmd:MD_ImageDescription" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -1915,37 +1690,34 @@
 				<xsl:call-template name="MD_CoverageDescription"/>
 				<xsl:for-each select="gmd:illuminationElevationAngle">
 					<dt>
-						<span class="element">Illumination Elevation Angle
-							</span>&#x2002;<xsl:call-template name="Real"/>
+						<span class="element">Illumination Elevation Angle </span>&#x2002;<xsl:call-template name="Real"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:illuminationAzimuthAngle">
 					<dt>
-						<span class="element">Illumination Azimuth Angle
-							</span>&#x2002;<xsl:call-template name="Real"/>
+						<span class="element">Illumination Azimuth Angle </span>&#x2002;<xsl:call-template name="Real"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:imagingCondition/gmd:MD_ImagingConditionCode">
 					<dt>
-						<span class="element">Imaging Condition </span>&#x2002; <xsl:call-template
-							name="AnyCode"/>
+						<span class="element">Imaging Condition </span>&#x2002;
+       		<xsl:call-template name="AnyCode"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:cloudCoverPercentage">
 					<dt>
-						<span class="element">Cloud Cover Percentage
-							</span>&#x2002;<xsl:call-template name="Real"/>
+						<span class="element">Cloud Cover Percentage </span>&#x2002;<xsl:call-template name="Real"/>
 					</dt>
 				</xsl:for-each>
-				<xsl:if
-					test="gmd:illuminationElevationAngle | gmd:illuminationAzimuthAngle | gmd:imagingCondition | gmd:cloudCoverPercentage">
+				<xsl:if test="gmd:illuminationElevationAngle | gmd:illuminationAzimuthAngle | gmd:imagingCondition | gmd:cloudCoverPercentage">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
 				<xsl:for-each select="gmd:imageQualityCode/gmd:MD_Identifier">
 					<dt>
 						<span class="element">Image Quality Code </span>
-					</dt>&#x2002; <xsl:apply-templates select="." mode="iso19139"/>
+					</dt>&#x2002;
+        <xsl:apply-templates select="." mode="iso19139"/>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:processingLevelCode/gmd:MD_Identifier">
 					<dt>
@@ -1954,45 +1726,42 @@
 				</xsl:for-each>
 				<xsl:for-each select="gmd:compressionGenerationQuantity">
 					<dt>
-						<span class="element"> compression Generation Quantity
-							</span>&#x2002;<xsl:call-template name="Integer"/>
+						<span class="element"> compression Generation Quantity </span>&#x2002;<xsl:call-template name="Integer"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:triangulationIndicator">
 					<dt>
 						<span class="element"> triangulation Indicator </span>&#x2002;
-							<xsl:call-template name="Boolean"/>
+          <xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:radiometricCalibrationDataAvailability">
 					<dt>
-						<span class="element"> radiometric Calibration Data Availability
-						</span>&#x2002; <xsl:call-template name="Boolean"/>
+						<span class="element"> radiometric Calibration Data Availability </span>&#x2002;
+					<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:cameraCalibrationInformationAvailability">
 					<dt>
-						<span class="element"> cameraCalibrationInformationAvailability
-						</span>&#x2002; <xsl:call-template name="Boolean"/>
+						<span class="element"> cameraCalibrationInformationAvailability </span>&#x2002;
+					<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:filmDistortionInformationAvailability">
 					<dt>
 						<span class="element"> filmDistortionInformationAvailability </span>&#x2002;
-							<xsl:value-of select="."/>
+					<xsl:value-of select="."/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:lensDistortionInformationAvailability">
 					<dt>
 						<span class="element"> lensDistortionInformationAvailability </span>&#x2002;
-							<xsl:call-template name="Boolean"/>
+					<xsl:call-template name="Boolean"/>
 					</dt>
 				</xsl:for-each>
-				<xsl:if
-					test="
-						gmd:compressionGenerationQuantity | gmd:triangulationIndicator |
-						gmd:radiometricCalibrationDataAvailability | gmd:cameraCalibrationInformationAvailability |
-						gmd:filmDistortionInformationAvailability | gmd:lensDistortionInformationAvailability">
+				<xsl:if test="gmd:compressionGenerationQuantity | gmd:triangulationIndicator | 
+				gmd:radiometricCalibrationDataAvailability | gmd:cameraCalibrationInformationAvailability |  
+				gmd:filmDistortionInformationAvailability | gmd:lensDistortionInformationAvailability">
 					<!-- <br/> -->
 					<!-- <br/> -->
 				</xsl:if>
@@ -2005,21 +1774,17 @@
 	<xsl:template match="gmd:MD_ReferenceSystem" mode="iso19139">
 		<xsl:if test="(local-name(./..) = 'referenceSystemInfo')">
 			<a>
-				<xsl:attribute name="name">
-					<xsl:value-of select="generate-id(.)"/>
-				</xsl:attribute>
-				<xsl:attribute name="id">
-					<xsl:value-of select="generate-id(.)"/>
-				</xsl:attribute>
+				<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+				<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 				<hr/>
 			</a>
 		</xsl:if>
-		<xsl:if test="count(../../gmd:referenceSystemInfo) = 1">
+		<xsl:if test="count (../../gmd:referenceSystemInfo) = 1">
 			<dt>
 				<h2>Reference system information</h2>
 			</dt>
 		</xsl:if>
-		<xsl:if test="count(../../gmd:referenceSystemInfo) &gt; 1">
+		<xsl:if test="count (../../gmd:referenceSystemInfo) &gt; 1">
 			<dt>
 				<h2>reference system <xsl:value-of select="position()"/>
 				</h2>
@@ -2031,8 +1796,7 @@
 					<dt>
 						<span class="element">Reference System Identifier </span>
 					</dt>
-					<xsl:apply-templates select="gmd:referenceSystemIdentifier/gmd:RS_Identifier"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:referenceSystemIdentifier/gmd:RS_Identifier" mode="iso19139"/>
 				</xsl:if>
 				<!-- no support for RS_ReferenceSystem information -->
 			</dd>
@@ -2045,20 +1809,16 @@
 	<!-- Data Quality Information  (B.2.4 DQ_DataQuality - line78) -->
 	<xsl:template match="gmd:DQ_DataQuality" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
-		<xsl:if test="count(../../gmd:dataQualityInfo) = 1">
+		<xsl:if test="count (../../gmd:dataQualityInfo) = 1">
 			<dt>
 				<h2>Data quality information</h2>
 			</dt>
 		</xsl:if>
-		<xsl:if test="count(../../gmd:dataQualityInfo) &gt; 1">
+		<xsl:if test="count (../../gmd:dataQualityInfo) &gt; 1">
 			<dt>
 				<h2>quality statement <xsl:value-of select="position()"/>
 				</h2>
@@ -2086,8 +1846,8 @@
 				<dl>
 					<xsl:for-each select="gmd:level/gmd:MD_ScopeCode">
 						<dt>
-							<span class="element">scope level </span>&#x2002; <xsl:call-template
-								name="AnyCode"/>
+							<span class="element">scope level </span>&#x2002;
+			<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:levelDescription">
@@ -2098,15 +1858,14 @@
 						</xsl:if>
 						<dl>
 							<dd>
-								<xsl:apply-templates select="gmd:MD_ScopeDescription"
-									mode="iso19139"/>
+								<xsl:apply-templates select="gmd:MD_ScopeDescription" mode="iso19139"/>
 							</dd>
 						</dl>
-						<xsl:if test="count(following-sibling::*) = 0">
+						<xsl:if test="count (following-sibling::*) = 0">
 							<!-- <br/> -->
 						</xsl:if>
 					</xsl:for-each>
-					<xsl:if test="(gmd:level) and not(gmd:levelDescription)">
+					<xsl:if test="(gmd:level) and not (gmd:levelDescription)">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
@@ -2153,30 +1912,26 @@
 				<dl>
 					<xsl:for-each select="gmd:dateTime">
 						<dt>
-							<span class="element"> date and time </span>&#x2002;<xsl:call-template
-								name="Date_PropertyType"/>
+							<span class="element"> date and time </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:description">
 						<dt>
-							<span class="element"> description </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:rationale">
 						<dt>
-							<span class="element"> Rationale </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Rationale </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
-					<xsl:if test="gmd:dateTime | gmd:description | gmd:rationale">
+					<xsl:if test="gmd:dateTime | gmd:description |gmd:rationale">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
-					<xsl:apply-templates select="gmd:processor/gmd:CI_ResponsibleParty"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:processor/gmd:CI_ResponsibleParty" mode="iso19139"/>
 					<!-- TODO: review this -->
-					<xsl:if test="not(../gmd:sourceStep)">
+					<xsl:if test="not (../gmd:sourceStep)">
 						<xsl:apply-templates select="gmd:source/gmd:LI_Source" mode="iso19139"/>
 					</xsl:if>
 				</dl>
@@ -2194,14 +1949,12 @@
 				<dl>
 					<xsl:for-each select="gmd:description">
 						<dt>
-							<span class="element">source description
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">source description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:scaleDenominator/gmd:MD_RepresentativeFraction"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:scaleDenominator/gmd:MD_RepresentativeFraction" mode="iso19139"/>
 					<xsl:apply-templates select="gmd:sourceCitation/gmd:CI_Citation" mode="iso19139"/>
 					<xsl:for-each select="gmd:sourceReferenceSystem">
 						<dt>
@@ -2211,7 +1964,7 @@
 					</xsl:for-each>
 					<xsl:apply-templates select="gmd:sourceExtent/gmd:EX_Extent" mode="iso19139"/>
 					<!-- TODO: review this -->
-					<xsl:if test="not(../gmd:source)">
+					<xsl:if test="not (../gmd:source)">
 						<xsl:apply-templates select="gmd:sourceStep" mode="iso19139"/>
 					</xsl:if>
 				</dl>
@@ -2219,9 +1972,7 @@
 		</dd>
 	</xsl:template>
 	<!-- Data Quality Element Information (B.2.4.2 DQ_Element - line99) -->
-	<xsl:template
-		match="gmd:DQ_CompletenessOmission | gmd:DQ_CompletenessCommission | gmd:DQ_TopologicalConsistency | gmd:DQ_FormatConsistency | gmd:DQ_DomainConsistency | gmd:DQ_ConceptualConsistency | gmd:DQ_RelativeInternalPositionalAccuracy | gmd:DQ_GriddedDataPositionalAccuracy | gmd:DQ_AbsoluteExternalPositionalAccuracy | gmd:DQ_QuantitativeAttributeAccuracy | gmd:DQ_NonQuantitativeAttributeAccuracy | gmd:DQ_ThematicClassificationCorrectness | gmd:DQ_TemporalValidity | gmd:DQ_TemporalConsistency | gmd:DQ_AccuracyOfATimeMeasurement"
-		mode="iso19139">
+	<xsl:template match="gmd:DQ_CompletenessOmission | gmd:DQ_CompletenessCommission | gmd:DQ_TopologicalConsistency | gmd:DQ_FormatConsistency | gmd:DQ_DomainConsistency | gmd:DQ_ConceptualConsistency | gmd:DQ_RelativeInternalPositionalAccuracy | gmd:DQ_GriddedDataPositionalAccuracy | gmd:DQ_AbsoluteExternalPositionalAccuracy | gmd:DQ_QuantitativeAttributeAccuracy | gmd:DQ_NonQuantitativeAttributeAccuracy | gmd:DQ_ThematicClassificationCorrectness | gmd:DQ_TemporalValidity | gmd:DQ_TemporalConsistency | gmd:DQ_AccuracyOfATimeMeasurement" mode="iso19139">
 		<dd>
 			<xsl:choose>
 				<!-- NOTE: this is abstract
@@ -2312,20 +2063,18 @@
 				<dl>
 					<xsl:for-each select="gmd:nameOfMeasure">
 						<dt>
-							<span class="element"> name Of Measure </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> name Of Measure </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:evaluationMethodType/gmd:DQ_EvaluationMethodTypeCode">
 						<dt>
 							<span class="element"> evaluation Method Type </span>&#x2002;
-								<xsl:call-template name="AnyCode"/>
+				<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:dateTime">
 						<dt>
-							<span class="element"> dateTime </span>&#x2002;<xsl:call-template
-								name="Date_PropertyType"/>
+							<span class="element"> dateTime </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:nameOfMeasure | gmd:evaluationMethodType | gmd:dateTime">
@@ -2334,16 +2083,14 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:measureDescription">
 						<dt>
-							<span class="element"> measure Description
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> measure Description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:for-each>
 					<xsl:for-each select="gmd:evaluationMethodDescription">
 						<dt>
-							<span class="element"> evaluation Method Description
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> evaluation Method Description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
@@ -2354,8 +2101,7 @@
 						</dt>
 						<xsl:apply-templates select="." mode="iso19139"/>
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:evaluationProcedure/gmd:CI_Citation"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:evaluationProcedure/gmd:CI_Citation" mode="iso19139"/>
 					<xsl:for-each select="gmd:result">
 						<!-- NOTE: this will select the sub-classes: DQ_ConformanceResult, DQ_QuantitativeResult -->
 						<xsl:apply-templates select="*" mode="iso19139"/>
@@ -2373,22 +2119,20 @@
 				<dl>
 					<xsl:for-each select="gmd:pass">
 						<dt>
-							<span class="element"> pass </span>&#x2002; <xsl:call-template
-								name="Boolean"/>
+							<span class="element"> pass </span>&#x2002;
+      	<xsl:call-template name="Boolean"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:explanation">
 						<dt>
-							<span class="element"> explanation </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> explanation </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:pass | gmd:explanation">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
-					<xsl:apply-templates select="gmd:specification/gmd:CI_Citation" mode="iso19139"
-					/>
+					<xsl:apply-templates select="gmd:specification/gmd:CI_Citation" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -2404,8 +2148,7 @@
 					<xsl:if test="gmd:value">
 						<xsl:for-each select="gmd:value">
 							<dt>
-								<span class="element">result value </span>&#x2002;<xsl:call-template
-									name="Record"/>
+								<span class="element">result value </span>&#x2002;<xsl:call-template name="Record"/>
 							</dt>
 						</xsl:for-each>
 						<!-- <br/> -->
@@ -2413,8 +2156,7 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:valueType">
 						<dt>
-							<span class="element"> value Type </span>&#x2002;<xsl:call-template
-								name="RecordType"/>
+							<span class="element"> value Type </span>&#x2002;<xsl:call-template name="RecordType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:valueUnit">
@@ -2424,21 +2166,20 @@
 						<dd>
 							<dl>
 								<xsl:apply-templates select="gml:UnitDefinition" mode="iso19139"/>
-								<xsl:if test="count(following-sibling::*) = 0">
+								<xsl:if test="count (following-sibling::*) = 0">
 									<!-- <br/> -->
 									<!-- <br/> -->
 								</xsl:if>
 							</dl>
 						</dd>
 					</xsl:for-each>
-					<xsl:if test="(gmd:valueType) and not(gmd:valueUnit)">
+					<xsl:if test="(gmd:valueType) and not (gmd:valueUnit)">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
 					<xsl:for-each select="gmd:errorStatistic">
 						<dt>
-							<span class="element"> error Statistic </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> error Statistic </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
@@ -2451,22 +2192,19 @@
 	<!-- Distribution Information (B.2.10 MD_Distribution - line270) -->
 	<xsl:template match="gmd:MD_Distribution" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
-		<xsl:if test="count(../../gmd:distributionInfo) = 1">
+		<xsl:if test="count (../../gmd:distributionInfo) = 1">
 			<dt>
 				<h2> Resource distribution information</h2>
 			</dt>
 		</xsl:if>
-		<xsl:if test="count(../../gmd:distributionInfo) &gt; 1">
+		<xsl:if test="count (../../gmd:distributionInfo) &gt; 1">
 			<dt>
-				<h2> Multiple distribution methods: <xsl:value-of select="position()"/>
+				<h2>
+        Multiple distribution methods: <xsl:value-of select="position()"/>
 				</h2>
 			</dt>
 		</xsl:if>
@@ -2474,8 +2212,7 @@
 			<dd>
 				<xsl:apply-templates select="gmd:distributor/gmd:MD_Distributor" mode="iso19139"/>
 				<xsl:apply-templates select="gmd:distributionFormat/gmd:MD_Format" mode="iso19139"/>
-				<xsl:apply-templates select="gmd:transferOptions/gmd:MD_DigitalTransferOptions"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:transferOptions/gmd:MD_DigitalTransferOptions" mode="iso19139"/>
 			</dd>
 		</dl>
 		<a class="top" href="#Top">Back to top</a>
@@ -2489,19 +2226,13 @@
 			</dt>
 			<dd>
 				<dl>
-					<xsl:apply-templates select="gmd:distributorContact/gmd:CI_ResponsibleParty"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:distributorContact/gmd:CI_ResponsibleParty" mode="iso19139"/>
 					<!-- NOTE: removed tests for recursion <xsl:if test="context()[not ((../../dsFormat) or (../../distorFormat) or (../../distFormat))]">
       <xsl:apply-templates select="gmd:distributorFormat/gmd:MD_Format" mode="iso19139"/> 
     </xsl:if>-->
-					<xsl:apply-templates select="gmd:distributorFormat/gmd:MD_Format"
-						mode="iso19139"/>
-					<xsl:apply-templates
-						select="gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess"
-						mode="iso19139"/>
-					<xsl:apply-templates
-						select="gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:distributorFormat/gmd:MD_Format" mode="iso19139"/>
+					<xsl:apply-templates select="gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess" mode="iso19139"/>
+					<xsl:apply-templates select="gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -2531,44 +2262,37 @@
 				<dl>
 					<xsl:for-each select="gmd:name">
 						<dt>
-							<span class="element"> Format name </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Format name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:version">
 						<dt>
-							<span class="element"> Format version </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Format version </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:amendmentNumber">
 						<dt>
-							<span class="element"> amendment Number
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> amendment Number </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:specification">
 						<dt>
-							<span class="element"> specification ></span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> specification ></span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:fileDecompressionTechnique">
 						<dt>
-							<span class="element"> file Decompression Technique
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> file Decompression Technique </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
-					<xsl:if
-						test="gmd:name | gmd:version | gmd:amendmentNumber | gmd:specification | gmd:fileDecompressionTechnique">
+					<xsl:if test="gmd:name | gmd:version | gmd:amendmentNumber | gmd:specification | gmd:fileDecompressionTechnique">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
 					<!-- NOTE: removed <xsl:if test="context()[not ((../../distributor) or (../../formatDist))]">
       <xsl:apply-templates select="formatDist" mode="iso19139"/>
     </xsl:if>-->
-					<xsl:apply-templates select="gmd:formatDistributor/gmd:MD_Distributor"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:formatDistributor/gmd:MD_Distributor" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -2592,20 +2316,17 @@
 				<dl>
 					<xsl:for-each select="gmd:fees">
 						<dt>
-							<span class="element"> fees </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> fees </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:plannedAvailableDateTime">
 						<dt>
-							<span class="element"> plannedAvailableDateTime
-								</span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
+							<span class="element"> plannedAvailableDateTime </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:orderingInstructions">
 						<dt>
-							<span class="element"> Ordering Instructions
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> Ordering Instructions </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:turnaround">
@@ -2636,14 +2357,12 @@
 				<dl>
 					<xsl:for-each select="gmd:transferSize">
 						<dt>
-							<span class="element"> transfer Size </span>&#x2002;<xsl:call-template
-								name="Real"/>
+							<span class="element"> transfer Size </span>&#x2002;<xsl:call-template name="Real"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:unitsOfDistribution">
 						<dt>
-							<span class="element">Unit of distribution
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element">Unit of distribution </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:transferSize | gmd:unitsOfDistribution">
@@ -2666,16 +2385,15 @@
 				<dl>
 					<xsl:for-each select="gmd:name">
 						<dt>
-							<span class="element"> name </span>&#x2002; <xsl:for-each
-								select="gmd:MD_MediumNameCode">
+							<span class="element"> name </span>&#x2002;
+        <xsl:for-each select="gmd:MD_MediumNameCode">
 								<xsl:call-template name="AnyCode"/>
 							</xsl:for-each>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:volumes">
 						<dt>
-							<span class="element"> volumes </span>&#x2002;<xsl:call-template
-								name="Integer"/>
+							<span class="element"> volumes </span>&#x2002;<xsl:call-template name="Integer"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:name | gmd:volumes">
@@ -2684,22 +2402,20 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:mediumFormat">
 						<dt>
-							<span class="element"> medium Format </span>&#x2002; <xsl:for-each
-								select="gmd:MD_MediumFormatCode">
+							<span class="element"> medium Format </span>&#x2002;
+        <xsl:for-each select="gmd:MD_MediumFormatCode">
 								<xsl:call-template name="AnyCode"/>
 							</xsl:for-each>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:density">
 						<dt>
-							<span class="element"> density </span>&#x2002;<xsl:call-template
-								name="Real"/>
+							<span class="element"> density </span>&#x2002;<xsl:call-template name="Real"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:densityUnits">
 						<dt>
-							<span class="element"> density Units </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> density Units </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:mediumFormat | gmd:density | gmd:densityUnits">
@@ -2708,10 +2424,9 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:mediumNote">
 						<dt>
-							<span class="element"> medium Note </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> medium Note </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
-						<xsl:if test="count(following-sibling::*) = 0">
+						<xsl:if test="count (following-sibling::*) = 0">
 							<!-- <br/> -->
 							<!-- <br/> -->
 						</xsl:if>
@@ -2723,12 +2438,8 @@
 	<!-- Portrayal Catalogue Reference (B.2.9 MD_PortrayalCatalogueReference - line268) -->
 	<xsl:template match="gmd:MD_PortrayalCatalogueReference" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<!-- removed 
@@ -2745,8 +2456,7 @@
 		</dt>
 		<dl>
 			<dd>
-				<xsl:apply-templates select="gmd:portrayalCatalogueCitation/gmd:CI_Citation"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:portrayalCatalogueCitation/gmd:CI_Citation" mode="iso19139"/>
 			</dd>
 		</dl>
 		<a class="top" href="#Top">Back to top</a>
@@ -2755,22 +2465,19 @@
 	<!-- Application schema Information (B.2.12 MD_ApplicationSchemaInformation - line320) -->
 	<xsl:template match="gmd:MD_ApplicationSchemaInformation" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
-		<xsl:if test="count(../../*[gmd:MD_ApplicationSchemaInformation]) = 1">
+		<xsl:if test="count (../../*[gmd:MD_ApplicationSchemaInformation]) =  1">
 			<dt>
 				<h2>Application schema information</h2>
 			</dt>
 		</xsl:if>
-		<xsl:if test="count(../../*[gmd:MD_ApplicationSchemaInformation]) &gt; 1">
+		<xsl:if test="count (../../*[gmd:MD_ApplicationSchemaInformation]) &gt; 1">
 			<dt>
-				<h2>Schema <xsl:for-each select="..">
+				<h2>Schema 
+				<xsl:for-each select="..">
 						<xsl:value-of select="position()"/>
 					</xsl:for-each>
 				</h2>
@@ -2781,14 +2488,12 @@
 				<xsl:apply-templates select="gmd:name/gmd:CI_Citation" mode="iso19139"/>
 				<xsl:for-each select="gmd:schemaLanguage">
 					<dt>
-						<span class="element"> schema Language </span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element"> schema Language </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gmd:constraintLanguage">
 					<dt>
-						<span class="element"> constraint Language </span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element"> constraint Language </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:if test="gmd:schemaLanguage | gmd:constraintLanguage">
@@ -2797,8 +2502,7 @@
 				</xsl:if>
 				<xsl:for-each select="gmd:schemaAscii">
 					<dt>
-						<span class="element"> Schema ASCII </span>&#x2003;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element"> Schema ASCII </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 					<!-- <br/> -->
 					<!-- <br/> -->
@@ -2817,8 +2521,7 @@
 				</xsl:for-each>
 				<xsl:for-each select="gmd:softwareDevelopmentFileFormat">
 					<dt>
-						<span class="element"> software Development File Format
-							</span>&#x2003;<xsl:call-template name="CharacterString"/>
+						<span class="element"> software Development File Format </span>&#x2003;<xsl:call-template name="CharacterString"/>
 					</dt>
 					<!-- <br/> -->
 					<!-- <br/> -->
@@ -2861,12 +2564,8 @@
 	<!-- Metadata Extension Information (B.2.11 MD_MetadataExtensionInformation - line303) -->
 	<xsl:template match="gmd:MD_MetadataExtensionInformation" mode="iso19139">
 		<a>
-			<xsl:attribute name="name">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
-			<xsl:attribute name="id">
-				<xsl:value-of select="generate-id(.)"/>
-			</xsl:attribute>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
 			<hr/>
 		</a>
 		<dt>
@@ -2874,11 +2573,8 @@
 		</dt>
 		<dl>
 			<dd>
-				<xsl:apply-templates select="gmd:extensionOnLineResource/gmd:CI_OnlineResource"
-					mode="iso19139"/>
-				<xsl:apply-templates
-					select="gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"
-					mode="iso19139"/>
+				<xsl:apply-templates select="gmd:extensionOnLineResource/gmd:CI_OnlineResource" mode="iso19139"/>
+				<xsl:apply-templates select="gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation" mode="iso19139"/>
 			</dd>
 		</dl>
 		<a class="top" href="#Top">Back to top</a>
@@ -2893,26 +2589,22 @@
 				<dl>
 					<xsl:for-each select="gmd:name">
 						<dt>
-							<span class="element"> Elementname </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Elementname </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:shortName">
 						<dt>
-							<span class="element"> shortName </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> shortName </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:domainCode">
 						<dt>
-							<span class="element"> domainCode </span>&#x2002;<xsl:call-template
-								name="Integer"/>
+							<span class="element"> domainCode </span>&#x2002;<xsl:call-template name="Integer"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:definition">
 						<dt>
-							<span class="element"> definition </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> definition </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:name | gmd:shortName | gmd:domainCode | gmd:definition">
@@ -2921,63 +2613,55 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:c/gmd:MD_ObligationCode">
 						<dt>
-							<span class="element"> Obligation </span>&#x2002; <xsl:call-template
-								name="AnyCode"/>
+							<span class="element"> Obligation </span>&#x2002;
+					<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:condition">
 						<dt>
-							<span class="element"> condition </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> condition </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:maximumOccurrence">
 						<dt>
-							<span class="element"> maximumOccurrence
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> maximumOccurrence </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:dataType/gmd:MD_DatatypeCode">
 						<dt>
-							<span class="element"> dataType </span>&#x2002; <xsl:call-template
-								name="AnyCode"/>
+							<span class="element"> dataType </span>&#x2002;
+			<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:domainValue">
 						<dt>
-							<span class="element"> domainValue </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> domainValue </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
-					<xsl:if
-						test="gmd:obligation | gmd:condition | gmd:maximumOccurrence | gmd:dataType | gmd:domainValue">
+					<xsl:if test="gmd:obligation | gmd:condition | gmd:maximumOccurrence | gmd:dataType | gmd:domainValue">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
 					<xsl:for-each select="gmd:parentEntity">
 						<dt>
-							<span class="element"> parentEntity </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> parentEntity </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:rule">
 						<dt>
-							<span class="element"> rule </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> rule </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:rationale">
 						<dt>
-							<span class="element"> rationale </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> rationale </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:parentEntity | gmd:rule | gmd:rationale">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
-					<xsl:apply-templates select="gmd:source/gmd:CI_ResponsibleParty" mode="iso19139"
-					/>
+					<xsl:apply-templates select="gmd:source/gmd:CI_ResponsibleParty" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -3048,16 +2732,15 @@
 				<dl>
 					<xsl:for-each select="gmd:title">
 						<dt>
-							<span class="element"> Title </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Title </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:alternateTitle">
 						<dt>
-							<span class="element"> alternateTitle </span>&#x2002; <xsl:for-each
-								select="gmd:alternateTitle">
+							<span class="element"> alternateTitle </span>&#x2002;
+	      <xsl:for-each select="gmd:alternateTitle">
 								<xsl:call-template name="CharacterString"/>
-								<xsl:if test="not(position() = last())">, </xsl:if>
+								<xsl:if test="not(position()=last())">, </xsl:if>
 							</xsl:for-each>
 						</dt>
 					</xsl:if>
@@ -3070,20 +2753,18 @@
 					<xsl:apply-templates select="gmd:date/gmd:CI_Date" mode="iso19139"/>
 					<xsl:for-each select="gmd:edition">
 						<dt>
-							<span class="element"> Edition </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Edition </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:editionDate">
 						<dt>
-							<span class="element"> edition Date </span>&#x2002;<xsl:call-template
-								name="Date_PropertyType"/>
+							<span class="element"> edition Date </span>&#x2002;<xsl:call-template name="Date_PropertyType"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:presentationForm">
 						<dt>
-							<span class="element"> presentationForm </span>&#x2002; <xsl:for-each
-								select="gmd:CI_PresentationFormCode">
+							<span class="element"> presentationForm </span>&#x2002;
+        <xsl:for-each select="gmd:CI_PresentationFormCode">
 								<xsl:call-template name="AnyCode"/>
 							</xsl:for-each>
 						</dt>
@@ -3094,8 +2775,7 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:collectiveTitle">
 						<dt>
-							<span class="element"> collective Title
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> collective Title </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:apply-templates select="gmd:series/gmd:CI_Series" mode="iso19139"/>
@@ -3107,20 +2787,17 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:ISBN">
 						<dt>
-							<span class="element"> ISBN </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> ISBN </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:ISSN">
 						<dt>
-							<span class="element"> ISSN </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> ISSN </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:identifier/gmd:code">
 						<dt>
-							<span class="element">Identifier </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">Identifier </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:ISBN | gmd:ISSN | gmd:identifier">
@@ -3129,14 +2806,12 @@
 					</xsl:if>
 					<xsl:for-each select="gmd:otherCitationDetails">
 						<dt>
-							<span class="element"> other Citation Details
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> other Citation Details </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty" mode="iso19139"/>
 					<!-- NOTE: removed <xsl:if test="context()[not (text()) and not(*)]"><br /></xsl:if>-->
 				</dl>
 			</dd>
@@ -3148,13 +2823,15 @@
 			<dt>
 				<span class="element">
 					<xsl:for-each select="gmd:dateType/gmd:CI_DateTypeCode">
-						<xsl:call-template name="AnyCode"/>&#x2008; Date </xsl:for-each>
-				</span>&#x2002; <xsl:for-each select="gmd:date">
+						<xsl:call-template name="AnyCode"/>&#x2008; Date 
+      </xsl:for-each>
+				</span>&#x2002;
+      <xsl:for-each select="gmd:date">
 					<xsl:call-template name="Date_PropertyType"/>
 				</xsl:for-each>
 			</dt>
 		</dd>
-		<xsl:if test="position() = last()">
+		<xsl:if test="position()=last()">
 			<!-- <br/> -->
 			<!-- <br/> -->
 		</xsl:if>
@@ -3167,16 +2844,33 @@
 			<dt>
 				<span class="element">
 					<xsl:choose>
-						<xsl:when test="../../gmd:contact"> Metadata contact </xsl:when>
-						<xsl:when test="../../gmd:pointOfContact"> point of contact </xsl:when>
-						<xsl:when test="../../gmd:userContactInfo"> user contact information </xsl:when>
-						<xsl:when test="../../gmd:processor"> processing agent contact </xsl:when>
-						<xsl:when test="../../gmd:distributorContact"> distributor contact </xsl:when>
-						<xsl:when test="../../gmd:citedResponsibleParty"> cited responsible party </xsl:when>
+						<xsl:when test="../../gmd:contact">
+      Metadata contact 
+    </xsl:when>
+						<xsl:when test="../../gmd:pointOfContact"> 
+     point of contact 
+    </xsl:when>
+						<xsl:when test="../../gmd:userContactInfo"> 
+      user contact information
+    </xsl:when>
+						<xsl:when test="../../gmd:processor">
+      processing agent contact
+    </xsl:when>
+						<xsl:when test="../../gmd:distributorContact">
+      distributor contact 
+    </xsl:when>
+						<xsl:when test="../../gmd:citedResponsibleParty">
+      cited responsible party 
+    </xsl:when>
 						<!-- gmd:source?? -->
-						<xsl:when test="../gmd:source"> source </xsl:when>
-						<xsl:otherwise> Contact </xsl:otherwise>
-					</xsl:choose> - <xsl:for-each select="gmd:role/gmd:CI_RoleCode">
+						<xsl:when test="../gmd:source">
+     source 
+    </xsl:when>
+						<xsl:otherwise>
+       Contact 
+    </xsl:otherwise>
+					</xsl:choose> - 
+  <xsl:for-each select="gmd:role/gmd:CI_RoleCode">
 						<xsl:call-template name="AnyCode"/>
 					</xsl:for-each>
 				</span>
@@ -3185,20 +2879,17 @@
 				<dl>
 					<xsl:for-each select="gmd:individualName">
 						<dt>
-							<span class="element"> individual Name </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> individual Name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:organisationName">
 						<dt>
-							<span class="element"> organisation Name
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> organisation Name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:positionName">
 						<dt>
-							<span class="element"> position Name </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> position Name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:if test="gmd:individualName | gmd:organisationName | gmd:positionName">
@@ -3220,12 +2911,10 @@
 				<dl>
 					<xsl:apply-templates select="gmd:phone/gmd:CI_Telephone" mode="iso19139"/>
 					<xsl:apply-templates select="gmd:address/gmd:CI_Address" mode="iso19139"/>
-					<xsl:apply-templates select="gmd:onlineResource/gmd:CI_OnlineResource"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:onlineResource/gmd:CI_OnlineResource" mode="iso19139"/>
 					<xsl:for-each select="gmd:hoursOfService">
 						<dt>
-							<span class="element"> hoursOfService </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> hoursOfService </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:contactInstructions">
@@ -3258,14 +2947,12 @@
 				<dl>
 					<xsl:for-each select="gmd:voice">
 						<dt>
-							<span class="element"> Voice </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Voice </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:facsimile">
 						<dt>
-							<span class="element"> Fax </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Fax </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 				</dl>
@@ -3282,39 +2969,30 @@
 			<dd>
 				<dl>
 					<dt>
-						<xsl:for-each select="gmd:deliveryPoint">
-							<!--							<span class="element"> deliveryPoint </span>&#x2003;-->
-							<xsl:call-template name="CharacterString"/>
-							<!--						</dt>-->
-						</xsl:for-each>
-						<xsl:for-each select="gmd:city">
-							<!--						<dt>-->
-							<span class="element">, </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
-							<!--						</dt>-->
-						</xsl:for-each>
-						<xsl:for-each select="gmd:administrativeArea"><!--
-							--><span
-								class="element">, </span>&#x2003;<xsl:call-template
-								name="CharacterString"/><!--
-					--></xsl:for-each>
-						<xsl:for-each select="gmd:postalCode">
-							<!--						<dt>-->
-							<span class="element">,&#x2003;</span>
-							<xsl:call-template name="CharacterString"/>
-							<!--					</dt>-->
-						</xsl:for-each>
-						<xsl:for-each select="gmd:country"><!--
-							--><span class="element">
-								Country </span>&#x2002;<xsl:call-template name="CharacterString"/>
-						</xsl:for-each>
+					<xsl:for-each select="gmd:deliveryPoint">
+<!--							<span class="element"> deliveryPoint </span>&#x2003;--><xsl:call-template name="CharacterString"/>
+<!--						</dt>-->
+					</xsl:for-each>
+					<xsl:for-each select="gmd:city">
+<!--						<dt>-->
+							<span class="element">, </span>&#x2003;<xsl:call-template name="CharacterString"/>
+<!--						</dt>-->
+					</xsl:for-each><xsl:for-each select="gmd:administrativeArea"><!--
+							--><span class="element">, </span>&#x2003;<xsl:call-template name="CharacterString"/><!--
+					--></xsl:for-each><xsl:for-each select="gmd:postalCode">
+<!--						<dt>-->
+							<span class="element">,&#x2003;</span><xsl:call-template name="CharacterString"/>
+						<!--					</dt>-->
+					</xsl:for-each>
+					<xsl:for-each select="gmd:country"><!--
+							--><span class="element"> Country </span>&#x2002;<xsl:call-template name="CharacterString"/>
+					</xsl:for-each>
 					</dt>
 					<xsl:for-each select="gmd:electronicMailAddress">
 						<dt>
 							<span class="element"> electronic Mail Address </span>&#x2002;<a>
 								<!-- xsl:attribute name="href">mailto:<xsl:value-of select="."/>?subject=<xsl:value-of select="//identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"/></xsl:attribute  -->
-								<xsl:attribute name="href">mailto:<xsl:value-of
-										select="gco:CharacterString"/></xsl:attribute>
+								<xsl:attribute name="href">mailto:<xsl:value-of select="gco:CharacterString"/></xsl:attribute>
 								<xsl:value-of select="normalize-space(gco:CharacterString)"/>
 							</a>
 						</dt>
@@ -3347,40 +3025,34 @@
 				<dl>
 					<xsl:for-each select="gmd:name">
 						<dt>
-							<span class="element">name </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element">name  </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:linkage/gmd:URL">
 						<dt>
-							<span class="element">URL: </span>&#x2002;<xsl:call-template
-								name="urlType">
+							<span class="element">URL: </span>&#x2002;<xsl:call-template name="urlType">
 								<xsl:with-param name="value" select="normalize-space(.)"/>
 							</xsl:call-template>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:protocol">
 						<dt>
-							<span class="element"> protocol </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> protocol </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:function/gmd:CI_OnLineFunctionCode">
 						<dt>
-							<span class="element"> link function </span>&#x2002;<xsl:call-template
-								name="AnyCode"/>
+							<span class="element"> link function </span>&#x2002;<xsl:call-template name="AnyCode"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:description">
 						<dt>
-							<span class="element"> Description </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Description </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:applicationProfile">
 						<dt>
-							<span class="element"> target application profile
-								</span>&#x2003;<xsl:call-template name="CharacterString"/>
+							<span class="element"> target application profile </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 				</dl>
@@ -3398,20 +3070,17 @@
 				<dl>
 					<xsl:for-each select="gmd:name">
 						<dt>
-							<span class="element"> Name </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Name </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:issueIdentification">
 						<dt>
-							<span class="element"> Issue </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Issue </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:page">
 						<dt>
-							<span class="element"> Pages </span>&#x2003;<xsl:call-template
-								name="CharacterString"/>
+							<span class="element"> Pages </span>&#x2003;<xsl:call-template name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
 				</dl>
@@ -3461,8 +3130,7 @@
 					<xsl:for-each select="gmd:temporalElement">
 						<xsl:apply-templates select="*" mode="iso19139"/>
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:verticalElement/gmd:EX_VerticalExtent"
-						mode="iso19139"/>
+					<xsl:apply-templates select="gmd:verticalElement/gmd:EX_VerticalExtent" mode="iso19139"/>
 				</dl>
 			</dd>
 		</dd>
@@ -3472,118 +3140,109 @@
 	<xsl:template match="gmd:EX_BoundingPolygon" mode="iso19139">
 		<dd>
 			<dl>
-				<xsl:for-each select="gmd:extentTypeCode">
-					<dt>
-						<span class="element"> extent Type Code </span>&#x2002; <xsl:call-template
-							name="Boolean"/>
-					</dt>
-				</xsl:for-each>
-				<xsl:for-each select="gmd:polygon/*[local-name() = 'Polygon']">
-					<dt>
-						<span class="element"> BoundingPolygon </span>
-					</dt>
-					<dt>
-						<span class="element"> polygon </span>
-					</dt>
-					<dl>
+					<xsl:for-each select="gmd:extentTypeCode">
+						<dt>
+							<span class="element"> extent Type Code </span>&#x2002;
+				<xsl:call-template name="Boolean"/>
+						</dt>
+					</xsl:for-each>
+					<xsl:for-each select="gmd:polygon/*[local-name()='Polygon']">
+						<dt>
+							<span class="element"> BoundingPolygon </span>
+						</dt>
+						<dt>
+							<span class="element"> polygon </span>
+						</dt>
+						<dl>
+							<dd>
+								<xsl:for-each select="gml:exterior/gml:LinearRing">
+									<dt>
+										<span class="element"> exterior </span>
+									</dt>
+									<dl>
+										<dd>
+											<xsl:for-each select="gml:pos">
+												<dt>
+													<span class="element"> gmlPos </span>&#x2002;<xsl:value-of select="."/>
+												</dt>
+											</xsl:for-each>
+										</dd>
+									</dl>
+								</xsl:for-each>
+								<xsl:for-each select="gml:interior/gml:LinearRing">
+									<dt>
+										<span class="element"> interior </span>
+									</dt>
+									<dl>
+										<dd>
+											<xsl:for-each select="gml:pos">
+												<dt>
+													<span class="element"> gmlPos </span>&#x2002;<xsl:value-of select="."/>
+												</dt>
+											</xsl:for-each>
+										</dd>
+									</dl>
+								</xsl:for-each>
+							</dd>
+						</dl>
+					</xsl:for-each>
+					<xsl:for-each select=".//*[local-name()='Point']">
 						<dd>
-							<xsl:for-each select="gml:exterior/gml:LinearRing">
+							<xsl:for-each select=".//*[(local-name()='pos') or (local-name()='coordinates')]">
 								<dt>
-									<span class="element"> exterior </span>
+									<span class="element">Sample Location (gmlPos): </span>&#x2002;<xsl:value-of select="."/>
+									<xsl:if test = "./*[local-name()='description']">
+										<dd>
+											<span class="element">Description: <xsl:value-of select = "./*[local-name()='description']"/></span>
+										</dd>
+									</xsl:if>
 								</dt>
-								<dl>
-									<dd>
-										<xsl:for-each select="gml:pos">
-											<dt>
-												<span class="element"> gmlPos
-												</span>&#x2002;<xsl:value-of select="."/>
-											</dt>
-										</xsl:for-each>
-									</dd>
-								</dl>
-							</xsl:for-each>
-							<xsl:for-each select="gml:interior/gml:LinearRing">
-								<dt>
-									<span class="element"> interior </span>
-								</dt>
-								<dl>
-									<dd>
-										<xsl:for-each select="gml:pos">
-											<dt>
-												<span class="element"> gmlPos
-												</span>&#x2002;<xsl:value-of select="."/>
-											</dt>
-										</xsl:for-each>
-									</dd>
-								</dl>
 							</xsl:for-each>
 						</dd>
-					</dl>
-				</xsl:for-each>
-				<xsl:for-each select=".//*[local-name() = 'Point']">
-					<dd>
-						<xsl:for-each
-							select=".//*[(local-name() = 'pos') or (local-name() = 'coordinates')]">
-							<dt>
-								<span class="element">Sample Location (gmlPos):
-									</span>&#x2002;<xsl:value-of select="."/>
-								<xsl:if test="./*[local-name() = 'description']">
-									<dd>
-										<span class="element">Description: <xsl:value-of
-												select="./*[local-name() = 'description']"/></span>
-									</dd>
-								</xsl:if>
-							</dt>
-						</xsl:for-each>
-					</dd>
-				</xsl:for-each>
-				<!-- <br/> -->
-			</dl>
-
+					</xsl:for-each>
+					<!-- <br/> -->
+				</dl>
+			
 		</dd>
 	</xsl:template>
 	<!-- Bounding Box Information (B.3.1.1 EX_GeographicBoundingBox - line343) -->
 	<xsl:template match="gmd:EX_GeographicBoundingBox" mode="iso19139">
 		<dd>
 			<dl>
-				<dt>
-					<span class="element"> Geographic Bounding Box </span>
-				</dt>
-				<dd>
-					<dl>
-						<xsl:for-each select="gmd:extentTypeCode">
-							<dt>
-								<span class="element"> extent Type Code </span>&#x2002;
-									<xsl:call-template name="Boolean"/>
-							</dt>
-						</xsl:for-each>
-						<xsl:for-each select="gmd:westBoundLongitude">
-							<dt>
-								<span class="element"> westBoundLongitude
-									</span>&#x2002;<xsl:call-template name="Decimal"/>
-							</dt>
-						</xsl:for-each>
-						<xsl:for-each select="gmd:eastBoundLongitude">
-							<dt>
-								<span class="element"> eastBoundLongitude
-									</span>&#x2002;<xsl:call-template name="Decimal"/>
-							</dt>
-						</xsl:for-each>
-						<xsl:for-each select="gmd:northBoundLatitude">
-							<dt>
-								<span class="element"> northBoundLatitude
-									</span>&#x2002;<xsl:call-template name="Decimal"/>
-							</dt>
-						</xsl:for-each>
-						<xsl:for-each select="gmd:southBoundLatitude">
-							<dt>
-								<span class="element"> southBoundLatitude
-									</span>&#x2002;<xsl:call-template name="Decimal"/>
-							</dt>
-						</xsl:for-each>
-					</dl>
-				</dd>
-			</dl>
+			<dt>
+				<span class="element"> Geographic Bounding Box </span>
+			</dt>
+			<dd>
+				<dl>
+					<xsl:for-each select="gmd:extentTypeCode">
+						<dt>
+							<span class="element"> extent Type Code </span>&#x2002;
+        	<xsl:call-template name="Boolean"/>
+						</dt>
+					</xsl:for-each>
+					<xsl:for-each select="gmd:westBoundLongitude">
+						<dt>
+							<span class="element"> westBoundLongitude </span>&#x2002;<xsl:call-template name="Decimal"/>
+						</dt>
+					</xsl:for-each>
+					<xsl:for-each select="gmd:eastBoundLongitude">
+						<dt>
+							<span class="element"> eastBoundLongitude </span>&#x2002;<xsl:call-template name="Decimal"/>
+						</dt>
+					</xsl:for-each>
+					<xsl:for-each select="gmd:northBoundLatitude">
+						<dt>
+							<span class="element"> northBoundLatitude </span>&#x2002;<xsl:call-template name="Decimal"/>
+						</dt>
+					</xsl:for-each>
+					<xsl:for-each select="gmd:southBoundLatitude">
+						<dt>
+							<span class="element"> southBoundLatitude </span>&#x2002;<xsl:call-template name="Decimal"/>
+						</dt>
+					</xsl:for-each>
+				</dl>
+			</dd>
+		</dl>
 		</dd>
 		<!-- <br/> -->
 	</xsl:template>
@@ -3598,12 +3257,11 @@
 					<xsl:for-each select="gmd:extentTypeCode">
 						<dt>
 							<span class="element"> extent Type Code </span>&#x2002;
-								<xsl:call-template name="Boolean"/>
+        	<xsl:call-template name="Boolean"/>
 						</dt>
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:geographicIdentifier/gmd:MD_Identifier"
-						mode="iso19139"/>
-					<xsl:if test="(gmd:extentTypeCode) and not(gmd:geographicIdentifier)">
+					<xsl:apply-templates select="gmd:geographicIdentifier/gmd:MD_Identifier" mode="iso19139"/>
+					<xsl:if test="(gmd:extentTypeCode) and not (gmd:geographicIdentifier)">
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:if>
@@ -3623,26 +3281,22 @@
 			<dl>
 				<xsl:for-each select="gml:beginPosition">
 					<dt>
-						<span class="element"> begin </span>&#x2002;<xsl:call-template
-							name="TimeInstant"/>
+						<span class="element"> begin </span>&#x2002;<xsl:call-template name="TimeInstant"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gml:begin/gml:TimeInstant">
 					<dt>
-						<span class="element"> begin</span>&#x2002;<xsl:call-template
-							name="TimeInstant"/>
+						<span class="element"> begin</span>&#x2002;<xsl:call-template name="TimeInstant"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gml:endPosition">
 					<dt>
-						<span class="element"> end </span>&#x2002;<xsl:call-template
-							name="TimeInstant"/>
+						<span class="element"> end </span>&#x2002;<xsl:call-template name="TimeInstant"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gml:end/gml:TimeInstant">
 					<dt>
-						<span class="element"> end </span>&#x2002;<xsl:call-template
-							name="TimeInstant"/>
+						<span class="element"> end </span>&#x2002;<xsl:call-template name="TimeInstant"/>
 					</dt>
 				</xsl:for-each>
 			</dl>
@@ -3655,8 +3309,8 @@
 			<dl>
 				<xsl:for-each select="gml:timePosition">
 					<dt>
-						<span class="element"> time Position</span>&#x2002; <xsl:call-template
-							name="TimeInstant"/>
+						<span class="element"> time Position</span>&#x2002;
+			<xsl:call-template name="TimeInstant"/>
 					</dt>
 				</xsl:for-each>
 			</dl>
@@ -3703,14 +3357,12 @@
 				<dl>
 					<xsl:for-each select="gmd:minimumValue">
 						<dt>
-							<span class="element"> bottom </span>&#x2002;<xsl:call-template
-								name="Real"/>
+							<span class="element"> bottom </span>&#x2002;<xsl:call-template name="Real"/>
 						</dt>
 					</xsl:for-each>
 					<xsl:for-each select="gmd:maximumValue">
 						<dt>
-							<span class="element">top </span>&#x2002;<xsl:call-template name="Real"
-							/>
+							<span class="element">top </span>&#x2002;<xsl:call-template name="Real"/>
 						</dt>
 					</xsl:for-each>
 					<!-- 19139 uses GML here instead of ISO 19115's unitOfMeasure (UomLength) -->
@@ -3718,8 +3370,7 @@
 						<xsl:for-each select="gmd:verticalCRS/*">
 							<!-- TODO: review this -->
 							<dt>
-								<span class="element"> Vertical Coordinate Reference System
-									/></span>&#x2002;<xsl:call-template name="AbstractCRS"/>
+								<span class="element"> Vertical Coordinate Reference System /></span>&#x2002;<xsl:call-template name="AbstractCRS"/>
 							</dt>
 						</xsl:for-each>
 					</xsl:if>
@@ -3783,10 +3434,8 @@
 				<dl>
 					<dd>
 						<b>
-							<xsl:value-of
-								select="gmd:textGroup/gmd:LocalisedCharacterString/@locale"/>
-						</b>&#x2002;<xsl:value-of
-							select="gmd:textGroup/gmd:LocalisedCharacterString"/>
+							<xsl:value-of select="gmd:textGroup/gmd:LocalisedCharacterString/@locale"/>
+						</b>&#x2002;<xsl:value-of select="gmd:textGroup/gmd:LocalisedCharacterString"/>
 					</dd>
 				</dl>
 			</xsl:if>
@@ -3811,16 +3460,14 @@
 			<dl>
 				<xsl:for-each select="gml:catalogSymbol">
 					<dt>
-						<span class="element"> gmlCatalogSymbo </span>&#x2002;<xsl:value-of
-							select="."/>
+						<span class="element"> gmlCatalogSymbo </span>&#x2002;<xsl:value-of select="."/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gml:catalogSymbol/@codeSpace">
 					<dl>
 						<dd>
 							<dt>
-								<span class="element"> gmlCatalogSymbol_codespace
-									</span>&#x2002;<xsl:value-of select="."/>
+								<span class="element"> gmlCatalogSymbol_codespace </span>&#x2002;<xsl:value-of select="."/>
 							</dt>
 						</dd>
 					</dl>
@@ -3830,8 +3477,7 @@
 				</xsl:if>
 				<xsl:for-each select="gml:quantityType">
 					<dt>
-						<span class="element"> gmlQuantityType </span>&#x2002;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element"> gmlQuantityType </span>&#x2002;<xsl:call-template name="CharacterString"/>
 					</dt>
 					<!-- <br/> -->
 					<!-- <br/> -->
@@ -3845,16 +3491,14 @@
 					<dl>
 						<dd>
 							<dt>
-								<span class="element"> gmlName2_codespace
-									</span>&#x2002;<xsl:value-of select="."/>
+								<span class="element"> gmlName2_codespace </span>&#x2002;<xsl:value-of select="."/>
 							</dt>
 						</dd>
 					</dl>
 				</xsl:for-each>
 				<xsl:for-each select="gml:description">
 					<dt>
-						<span class="element"> gmlDesc </span>&#x2002;<xsl:call-template
-							name="CharacterString"/>
+						<span class="element"> gmlDesc </span>&#x2002;<xsl:call-template name="CharacterString"/>
 					</dt>
 				</xsl:for-each>
 				<xsl:for-each select="gml:identifier">
@@ -3866,8 +3510,7 @@
 					<dl>
 						<dd>
 							<dt>
-								<span class="element"> gmlIdent2_codespace
-									</span>&#x2002;<xsl:value-of select="."/>
+								<span class="element"> gmlIdent2_codespace </span>&#x2002;<xsl:value-of select="."/>
 							</dt>
 						</dd>
 					</dl>
@@ -3908,8 +3551,7 @@
 				<xsl:value-of select="gco:Binary"/>
 				<xsl:if test="gco:Binary/@src">
 					<dt>
-						<span class="element"> srcAttribute </span>&#x2002;<xsl:call-template
-							name="urlType">
+						<span class="element"> srcAttribute </span>&#x2002;<xsl:call-template name="urlType">
 							<xsl:with-param name="value" select="gco:Binary/@src"/>
 						</xsl:call-template>
 					</dt>
@@ -3918,80 +3560,5 @@
 		</dl>
 		<!-- <br/> -->
 	</xsl:template>
-
-	<xsl:template name="showMap">
-
-		<!--<xsl:template n="k4:geoLocations">-->
-		<form id="geoLocations">
-			<xsl:call-template name="geoLocation"/>
-		</form>
-		<div id="mapc"/>
-		<!--</xsl:template>-->
-	</xsl:template>
-	<xsl:template name="geoLocation">
-		<!--			<xsl:choose>
-				<xsl:when test="./k4:geoLocationPoint">-->
-
-		<!-- for each gml:polygon/gml:Point -->
-		<xsl:for-each
-			select="//gmd:extent/descendant::*[local-name() = 'polygon']/*[local-name() = 'Point']">
-			<xsl:element name="input">
-				<xsl:attribute name="class">
-					<xsl:text>geoLocationPoint</xsl:text>
-				</xsl:attribute>
-				<xsl:attribute name="type">
-					<xsl:text>hidden</xsl:text>
-				</xsl:attribute>
-				<xsl:attribute name="value">
-					<xsl:value-of
-						select="substring-before(string(*[(local-name() = 'coordinates') or (local-name() = 'pos')]), ' ')"/>
-					<xsl:text> </xsl:text>
-					<xsl:value-of
-						select="substring-after(string(*[(local-name() = 'coordinates') or (local-name() = 'pos')]), ' ')"
-					/>
-				</xsl:attribute>
-
-				<!--<xsl:text>"longitude": "</xsl:text>
-						<xsl:value-of
-							select="substring-after(string(*[(local-name() = 'coordinates') or (local-name() = 'pos')]), ' ')"/>
-						<xsl:text>", "latitude": "</xsl:text>
-						<xsl:value-of
-							select="substring-before(string(*[(local-name() = 'coordinates') or (local-name() = 'pos')]), ' ')"/>-->
-			</xsl:element>
-		</xsl:for-each>
-
-		<!-- for each geographicBoundingBox -->
-		<xsl:for-each select="//gmd:extent//gmd:geographicElement/gmd:EX_GeographicBoundingBox">
-			<xsl:element name="input">
-				<xsl:attribute name="class">
-					<xsl:text>geoLocationBox</xsl:text>
-				</xsl:attribute>
-				<xsl:attribute name="type">
-					<xsl:text>hidden</xsl:text>
-				</xsl:attribute>
-				<xsl:attribute name="value">
-					<xsl:value-of select="gmd:southBoundLatitude/gco:Decimal/text()"/>
-					<xsl:text> </xsl:text>
-					<xsl:value-of select="gmd:westBoundLongitude/gco:Decimal/text()"/>
-					<xsl:text> </xsl:text>
-					<xsl:value-of select="gmd:northBoundLatitude/gco:Decimal/text()"/>
-					<xsl:text> </xsl:text>
-					<xsl:value-of select="gmd:eastBoundLongitude/gco:Decimal/text()"/>
-				</xsl:attribute>
-				<!--<xsl:value-of select="gmd:westBoundLongitude/gco:Decimal/text()"/>
-						<xsl:text>, </xsl:text>
-						<xsl:value-of select="gmd:southBoundLatitude/gco:Decimal/text()"/>
-						<xsl:text> </xsl:text>
-						<xsl:value-of select="gmd:eastBoundLongitude/gco:Decimal/text()"/>
-						<xsl:text>, </xsl:text>
-						<xsl:value-of select="gmd:northBoundLatitude/gco:Decimal/text()"/>-->
-			</xsl:element>
-
-		</xsl:for-each>
-		<!--				</xsl:when>
-			</xsl:choose>-->
-	</xsl:template>
-
-
 
 </xsl:stylesheet>

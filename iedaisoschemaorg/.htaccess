@@ -1,0 +1,7 @@
+
+RewriteEngine On
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteRule ^10\.1594\/IEDA\/(\d+)$ /doi/datadoi.php?id=$1&%{QUERY_STRING}
+RewriteRule ^(\d+)$ displaymetadata.php?file=$1
+RewriteRule ^(\d+)\.(.+)$ displaymetadata.php?file=$1.$2
