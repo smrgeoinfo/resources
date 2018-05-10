@@ -27,7 +27,7 @@ $prio = 1;
 $filetypes = array( '' );
 
 // Ignore array, files listed in this array will not be included in the sitemap.
-$ignore =  array( '.', '..', 'config.php', 'xml-sitemap.php' ) ;
+$ignore =  array( '.', '..', 'config.php', 'iedasitemaps.php', 'imports' ) ;
 
 /*
  * The directory to check.
@@ -56,6 +56,13 @@ function parse_dir( ) {
 		if ($fileinfo->isDir() && !$fileinfo->isDot()) {
 			//echo $fileinfo->getFilename().'<br>';
 			$thisdir = $fileinfo->getFilename();
+			
+			// Check if this dir needs to be ignored, if so, skip it.
+			if ( in_array( utf8_encode( $thisdir ), $ignore ) )
+				continue;
+			
+			
+			
 			$sitemapfilename = $thisdir.'_sitemap.xml';
 			$sitemap = fopen($sitemapfilename, 'w') or die('Cannot open file:  '.$sitemapfilename); //implicitly creates file
 			
@@ -71,6 +78,10 @@ function parse_dir( ) {
 				if ($fileinfo->isFile() && !$fileinfo->isDot()) {
 				
 				$file = $fileinfo->getFilename();
+				
+				// Check if this file needs to be ignored, if so, skip it.
+				if ( in_array( utf8_encode( $file ), $ignore ) )
+						continue;
 				// Create a W3C valid date for use in the XML sitemap based on the file modification time
 				if (filemtime( $localpath .'/'. $file )==FALSE) {
 					$mod = date( 'c', filectime( $localpath . '/'. $file ) );
