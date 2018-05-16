@@ -604,7 +604,6 @@
                     </div>
                     <div class="description">
                          <xsl:value-of select="//*[local-name()='publisher']"/>
-                         <xsl:text>- </xsl:text>
                      </div>
                     <button type="button" class="btn" onclick="window.location='{.}'"> Download Data </button> 
                     <div style="clear:both"/>
