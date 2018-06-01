@@ -1,5 +1,8 @@
 # Files for html display of ISO19139 and 19139-1 records
 
+The html documents will have a JSON-LD Script in the html header with a schema.org
+version of the metadata following conventions developed by the NSF EarthCube P418 project
+
 What's here
 
 ## displaymetadata.php
@@ -12,7 +15,9 @@ where NNNNNN is the 6 digit number used by IEDA as the final token in DOI string
 
 ## ISO19139ToHTMLwMap.xsl
 
-Base transform for converting ISO xml to html. Extensively modified from transform originated by Jacqui Mize at NOAA. This transform imports the various xsl files in the imports subdirectory, as well as the ISO19139ToSchemaOrgDataset1.0.xslt transform.
+Base transform for converting ISO xml to html. The trasform uses the javascript code copied from IEDA to present a map showing the location of the resource if there is a gmd:EX_Extent with a GeographicBoundingBox element or Point locations stored in gml:Polygon elements.  
+
+Extensively modified from transform originated by Jacqui Mize at NOAA. This transform imports the various xsl files in the imports subdirectory, as well as the ISO19139ToSchemaOrgDataset1.0.xslt transform.
 
 ## ISO19139ToSchemaOrgDataset1.0.xslt
 
@@ -27,9 +32,23 @@ http://{$_SERVER['HTTP_HOST']}/metadata/{NNNNNN}.XXX
 
 Subdirectory containing various files required for the ISO xml to html transformation.
 
-### generalwMap.xslt
+### generalwMap.xslt 
+
+Transform defines import elements for stylesheets and scripts; Javascript to generate map is imported here.
+datadoi.css style sheet from IEDA has been inserted inline in the styles template.
 
 ### iso19139usginMap.xslt
+
+this is where most of the transformation work is done; imports the other xslt's in the import directory
+
+### private.xslt
+
+defines variables for API keys or other secrets that should not be visible in public githup. This file is included 
+in .gitignore
+
+### private-template.xslt
+
+template xslt that will be included in repository clones.  change name to private.xslt in your checkout of the repo when you want to deploy or test. Put your keys in the indicated variables. 
 
 ### other support files
 
