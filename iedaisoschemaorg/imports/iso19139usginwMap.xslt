@@ -3,7 +3,7 @@
 	xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmi="http://www.isotc211.org/2005/gmi"
 	xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gco="http://www.isotc211.org/2005/gco"
 	xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gml="http://www.opengis.net/gml"
-	xmlns:res="http://www.esri.com/metadata/res/">
+	xmlns:res="http://www.esri.com/metadata/res/" xmlns:xlink="http://www.w3.org/1999/xlink">
 	<!-- An XSLT template for displaying metadata that is stored in the ISO 19139 metadata format.
 
      Copyright (c) 2009-2010, Environmental Systems Research Institute, Inc. All rights reserved.
@@ -27,20 +27,33 @@
 		doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"/>
 	<xsl:template name="iso19139">
-		<xsl:apply-templates select="//gmd:MD_Metadata | //gmi:MI_Metadata" mode="test"/>
+		<xsl:param name="isopath"/>
+		<!--<xsl:value-of select="concat('path: ', $isopath)"/>-->
+		<xsl:apply-templates select="//gmd:MD_Metadata | //gmi:MI_Metadata" mode="test">
+			<xsl:with-param name="isopath" select="$isopath"/>
+		</xsl:apply-templates>
 	</xsl:template>
 
 
 	<xsl:template match="gmd:MD_Metadata | gmi:MI_Metadata" mode="test">
-		
+		<xsl:param name="isopath"/>
 		<!-- display organization logo at top of web page, update as appropriate... -->
 		<div>
 			<a href="http://www.iedadata.org"><img onclick="http://www.iedadata.org" src="http://app.iedadata.org/images/ieda_maplogo.png" alt="IEDA"/></a>
-		
 		<!-- partner system logo for metadata contact if present 
-		(smr remove 2018-05-08, ECL logo link broken, MGDL and USAP don't have; still in github
-		source code -->
-	
+			not populated for MGDL or USAP, so comment out for now -->
+			<!--<xsl:if test="//gmd:contact//parent::*[gmd:CI_OnLineFunctionCode='logo graphic'][1]/preceding-sibling::gmd:linkage/gmd:URL">
+				<!-\-<img src="http://app.iedadata.org/images/ieda_maplogo.png" alt="IEDA"/>-\->
+				<xsl:element name="img">
+					<xsl:attribute name="src">
+						<xsl:value-of select="//gmd:contact//parent::*[gmd:CI_OnLineFunctionCode='logo graphic'][1]/preceding-sibling::gmd:linkage/gmd:URL"/>
+					</xsl:attribute>
+					<xsl:attribute name="alt">
+						<xsl:text>Metadata contact</xsl:text>
+					</xsl:attribute>
+				</xsl:element>
+			</xsl:if> -\->
+			<!-\-<xsl:value-of select="$isopath"/>-\->-->
 		</div>
 		
 		<h1>
@@ -81,9 +94,9 @@
 				//gmd:metadataConstraints |
 				//gmd:locale"/>
 
-		<div id="container">
-<div>
-	<div id="left-side">
+<div id="container">
+	<div>
+		<div id="left-side">
 			<ul>
 				<li class="iso19139heading">ISO19139 metadata content</li>
 				<!-- Resource Identification -->
@@ -150,17 +163,17 @@
 					</li>
 				</xsl:if>
 			</ul>
-</div>
-</div>
-			<!--displa map if have geospatial extent -->
-			<div id="right-side">
-				<!--<xsl:apply-templates select="//k4:geoLocations"/>-->
-				
-				<xsl:if test="$hasGeoSpatial">
-				<xsl:call-template name="showMap"/>
-				</xsl:if>
-			</div>
+		</div>
 
+			<!--display map if have geospatial extent -->
+		<div id="right-side">
+			<!--<xsl:apply-templates select="//k4:geoLocations"/>-->
+			
+			<xsl:if test="$hasGeoSpatial">
+			<xsl:call-template name="showMap"/>
+			</xsl:if>
+		</div>
+	</div>
 			<!-- PUT METADATA CONTENT ON THE HTML PAGE  -->
 			<!-- Resource Identification -->
 			<xsl:apply-templates select="$dataIdInfo/*" mode="iso19139"/>
@@ -3772,26 +3785,39 @@
 	<xsl:template name="Date_PropertyType">
 		<xsl:value-of select="(gco:Date | gco:DateTime)[1]"/>
 	</xsl:template>
-	<!-- gco:CharacterString , gco:FreeText -->
+
+	<!-- gco:CharacterString , gco:FreeText, gmx:Anchor -->
 	<xsl:template name="CharacterString">
 		<xsl:for-each select="*">
-			<xsl:if test="local-name(.) = 'CharacterString'">
-				<xsl:value-of select="normalize-space(.)"/>
-			</xsl:if>
-			<xsl:if test="local-name(.) = 'PT_FreeText'">
-				<!-- <b><xsl:value-of select="name(ancestor-or-self::*[2])" /></b> -->
-				<dl>
-					<dd>
-						<b>
-							<xsl:value-of
-								select="gmd:textGroup/gmd:LocalisedCharacterString/@locale"/>
-						</b>&#x2002;<xsl:value-of
-							select="gmd:textGroup/gmd:LocalisedCharacterString"/>
-					</dd>
-				</dl>
-			</xsl:if>
+			<xsl:choose>
+				<xsl:when test="local-name(.) = 'CharacterString'">
+					<xsl:value-of select="normalize-space(.)"/>
+				</xsl:when>
+				<xsl:when test="local-name(.) = 'PT_FreeText'">
+					<!-- <b><xsl:value-of select="name(ancestor-or-self::*[2])" /></b> -->
+					<dl>
+						<dd>
+							<b>
+								<xsl:value-of select="gmd:textGroup/gmd:LocalisedCharacterString/@locale"/>
+							</b>&#x2002;<xsl:value-of select="gmd:textGroup/gmd:LocalisedCharacterString"/>
+						</dd>
+					</dl>
+				</xsl:when>
+				<xsl:when test="local-name(.) = 'Anchor'">
+					<a>
+						<xsl:attribute name="href">
+							<xsl:value-of select="@xlink:href"/>
+						</xsl:attribute>
+						<xsl:value-of select="normalize-space(.)"/>
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="normalize-space(.)"/>
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:for-each>
 	</xsl:template>
+
 	<!-- gco:Record -->
 	<xsl:template name="Record">
 		<!-- NOTE: this has no content model in the ISO 19139 schemas -->
