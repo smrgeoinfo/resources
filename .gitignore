@@ -4,3 +4,5 @@ DataCiteXMLTransforms/archive/dataciteToHTMLwithSDObku20180130.xsl
 
 DataCiteXMLTransforms/archive/DataCite/ECL/*
 DataCiteXMLTransforms/archive/DataCite/USAP-DC/*
+DataCiteXMLTransforms/archive/*
+DataOneTesting/*
