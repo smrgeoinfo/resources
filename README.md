@@ -12,4 +12,10 @@ Public repository for sharing various resources with the community. resources ar
 
 * XMLsitemap tool. contains php code and xsl transform to display site map. This code is from https://github.com/jdevalk/XML-Sitemap-PHP-Script, with configuration added to work in the get.iedadata.org/doi directory.
 
-* Specimen JSON-LD. Contains documents related to generating a JSON-LD representation for geologic specimens
+* Specimen JSON-LD. Contains documents related to generating a JSON-LD representation for geologic specimens. Experimental drafts to see what can be done with schema.org and SOSA
+
+* to-ISOTransforms. contains php script (TransformJob.php) that scans an html file specified by the $url variable for html link elements; 
+   Checks the http HEAD for the link, and if the contenttype header parameter contains 'xml',
+   Gets the file, and does some simple introspection to identify the metadata dialect in the content, 
+   If a know dialect is recognized, transforms the file to ISO19139 XML using an xslt for that dialect, 
+   The ISO1939 result is placed in a location on the server running this php script. Recursively scans linked html documents by checking any html links in the source. 
