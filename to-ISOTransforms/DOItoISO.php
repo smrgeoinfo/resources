@@ -9,13 +9,13 @@
  * and handle appropriately.
  * Original by S. M. Richard 2018-01-29, 
  *  based on xml-sitemap.php from  Joost de Valk, joost@yoast.com
- 
+ *
  * 2018-06-02 SMR update to put configuration variable assignment inside the
-     script instead of an import.  Checks for UTIG, ECL, MGDS, USAP and CSDMS
-	 resources and puts output ISO metadata in separate subfolders for each.
+ *    script instead of an import.  Checks for UTIG, ECL, MGDS, USAP and CSDMS
+ *	 resources and puts output ISO metadata in separate subfolders for each.
  * 2018-06/02 NOTE to use this script, you will need to check the file inspection 
-     tests, source locations and target locations for consistency with current IEDA 
-	 DataCite xml encoding and get.iedadata.org site configuration.
+ *    tests, source locations and target locations for consistency with current IEDA 
+ *	 DataCite xml encoding and get.iedadata.org site configuration.
  */
  
  /*
