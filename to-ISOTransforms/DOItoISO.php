@@ -46,6 +46,9 @@ function parse_dir( $dir, $target ) {
 	global $ignore, $filetypes;
 	echo $dir . '<p>' ;
 	// set up the transform 
+	// the xslt source is at https://raw.githubusercontent.com/usgin/metadataTransforms/master/dataciteToISO19139v3.2.xslt
+	// It could be accessed from there, but here its accessed from a /metadata directory
+	// on the server that's running this script
 	$xslfile = "http://{$_SERVER['HTTP_HOST']}/metadata/DataciteToISO19139v3.2.xslt";
 	
 	#echo "xslfile: ".$xslfile;
@@ -79,7 +82,10 @@ function parse_dir( $dir, $target ) {
 		if ( in_array( $theExtension, $filetypes ) ) {
 
 			// do the transform
-
+			// see line 24, $DirectoryToScan (passed into function as $dir)
+			// for the local path on the server that this URL uses
+			// TBD-- we already read the file, use that as the source for transform; this
+			// http access is a relict of the original code I copied to build this
 			$service = "http://{$_SERVER['HTTP_HOST']}/metadata/doi/{$file}";
 			echo $service . "<p/>";
 			$headers = get_headers($service, 1);
