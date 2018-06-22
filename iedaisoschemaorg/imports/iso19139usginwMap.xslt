@@ -23,9 +23,10 @@
 	<xsl:import href="auxCountries.xslt"/>
 	<xsl:import href="auxUCUM.xslt"/>
 
-	<xsl:output method="xml" indent="yes" encoding="UTF-8"
+<!--	<xsl:output method="xml" indent="yes" encoding="UTF-8"
 		doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
-		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"/>
+		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"/>-->
+	<xsl:output method="html" indent="yes" encoding="UTF-8"/>
 	<xsl:template name="iso19139">
 		<xsl:param name="isopath"/>
 		<!--<xsl:value-of select="concat('path: ', $isopath)"/>-->
@@ -39,7 +40,7 @@
 		<xsl:param name="isopath"/>
 		<!-- display organization logo at top of web page, update as appropriate... -->
 		<div>
-			<a href="http://www.iedadata.org"><img onclick="http://www.iedadata.org" src="http://app.iedadata.org/images/ieda_maplogo.png" alt="IEDA"/></a>
+			<!--<a href="http://www.iedadata.org"><img onclick="http://www.iedadata.org" src="http://app.iedadata.org/images/ieda_maplogo.png" alt="IEDA"/></a>-->
 		<!-- partner system logo for metadata contact if present 
 			not populated for MGDL or USAP, so comment out for now -->
 			<!--<xsl:if test="//gmd:contact//parent::*[gmd:CI_OnLineFunctionCode='logo graphic'][1]/preceding-sibling::gmd:linkage/gmd:URL">
@@ -95,7 +96,7 @@
 				//gmd:locale"/>
 
 <div id="container">
-	<div>
+   <div>
 		<div id="left-side">
 			<ul>
 				<li class="iso19139heading">ISO19139 metadata content</li>
@@ -156,16 +157,16 @@
 				</xsl:call-template>
 				<!-- Metadata Identification -->
 				<!-- Root node "metadata" will always exist. Only add to TOC if it contains elements
-          that describe the metadata. -->
+		        that describe the metadata. -->
 				<xsl:if test="count($metadata-sections) &gt; 0">
 					<li>
 						<a href="#Metadata_Information">Metadata Information</a>
 					</li>
 				</xsl:if>
 			</ul>
-		</div>
-
-			<!--display map if have geospatial extent -->
+	    </div>
+	
+		<!--displa map if have geospatial extent -->
 		<div id="right-side">
 			<!--<xsl:apply-templates select="//k4:geoLocations"/>-->
 			
@@ -812,6 +813,7 @@
 				</xsl:if>
 				
 				<xsl:if test="gmd:descriptiveKeywords//gmd:keyword">
+					<ul style="margin-top: 20px;"/>
 				<dt><span class="element">Keywords: </span></dt>
 				<ul style="margin-top: 0px; padding-left: 20px;">
 				<xsl:apply-templates select="gmd:descriptiveKeywords/gmd:MD_Keywords"
@@ -3057,8 +3059,8 @@
 					</dt>
 				</xsl:otherwise>
 			</xsl:choose>
-			<dd>
-				<dl>
+			<dl>
+				<dd>
 					<xsl:for-each select="gmd:title">
 						<dt>
 							<span class="element"> Title </span>&#x2003;<xsl:call-template
@@ -3081,6 +3083,8 @@
 						<!-- <br/> -->
 					</xsl:if>
 					<xsl:apply-templates select="gmd:date/gmd:CI_Date" mode="iso19139"/>
+					<xsl:apply-templates select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty"
+						mode="iso19139"/>
 					<xsl:for-each select="gmd:edition">
 						<dt>
 							<span class="element"> Edition </span>&#x2003;<xsl:call-template
@@ -3148,11 +3152,8 @@
 						<!-- <br/> -->
 						<!-- <br/> -->
 					</xsl:for-each>
-					<xsl:apply-templates select="gmd:citedResponsibleParty/gmd:CI_ResponsibleParty"
-						mode="iso19139"/>
-					<!-- NOTE: removed <xsl:if test="context()[not (text()) and not(*)]"><br /></xsl:if>-->
-				</dl>
 			</dd>
+			</dl>
 		</dd>
 	</xsl:template>
 	<!-- Date Information (B.3.2.3 CI_Date) -->
@@ -3161,16 +3162,16 @@
 			<dt>
 				<span class="element">
 					<xsl:for-each select="gmd:dateType/gmd:CI_DateTypeCode">
-						<xsl:call-template name="AnyCode"/>&#x2008; Date </xsl:for-each>
-				</span>&#x2002; <xsl:for-each select="gmd:date">
+						<xsl:call-template name="AnyCode"/> date </xsl:for-each>
+				</span><xsl:for-each select="gmd:date">
 					<xsl:call-template name="Date_PropertyType"/>
 				</xsl:for-each>
 			</dt>
 		</dd>
-		<xsl:if test="position() = last()">
+		<!--<xsl:if test="position() = last()">-->
 			<!-- <br/> -->
 			<!-- <br/> -->
-		</xsl:if>
+		<!--</xsl:if>-->
 	</xsl:template>
 	<!-- Responsible Party Information (B.3.2 CI_ResponsibleParty - line374) -->
 	<xsl:template match="gmd:CI_ResponsibleParty" mode="iso19139">
@@ -3225,6 +3226,8 @@
 	</xsl:template>
 	<!-- Contact Information (B.3.2.2 CI_Contact - line387) -->
 	<xsl:template match="gmd:CI_Contact" mode="iso19139">
+		<xsl:choose>
+			<xsl:when test="descendant::gco:CharacterString[string-length(.)>0]">
 		<dd>
 			<dt>
 				<span class="element">Contact information</span>
@@ -3260,6 +3263,15 @@
 				</dl>
 			</dd>
 		</dd>
+			</xsl:when>
+			<xsl:otherwise>
+				<dd>
+					<dt>
+						<span class="element"> No contact information provided. </span>
+					</dt>
+				</dd>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<!-- Telephone Information (B.3.2.6 CI_Telephone - line407) -->
 	<xsl:template match="gmd:CI_Telephone" mode="iso19139">
@@ -3269,13 +3281,13 @@
 			</dt>
 			<dd>
 				<dl>
-					<xsl:for-each select="gmd:voice">
+					<xsl:for-each select="gmd:voice[string-length(normalize-space(gco:CharacterString))>0]">
 						<dt>
 							<span class="element"> Voice </span>&#x2003;<xsl:call-template
 								name="CharacterString"/>
 						</dt>
 					</xsl:for-each>
-					<xsl:for-each select="gmd:facsimile">
+					<xsl:for-each select="gmd:facsimile[string-length(normalize-space(gco:CharacterString))>0]">
 						<dt>
 							<span class="element"> Fax </span>&#x2003;<xsl:call-template
 								name="CharacterString"/>
@@ -3288,13 +3300,17 @@
 	</xsl:template>
 	<!-- Address Information (B.3.2.1 CI_Address - line380) -->
 	<xsl:template match="gmd:CI_Address" mode="iso19139">
+		<!-- first check if there's any content -->
+		<xsl:choose>
+		<xsl:when test="descendant::gco:CharacterString[string-length(.)>0]">
 		<dd>
-			<dt>
+<!--			<dt>
 				<span class="element"> Address </span>
-			</dt>
+			</dt>-->
 			<dd>
 				<dl>
 					<dt>
+						<span class="element"> Postal Address: </span>
 						<xsl:for-each select="gmd:deliveryPoint">
 							<!--							<span class="element"> deliveryPoint </span>&#x2003;-->
 							<xsl:call-template name="CharacterString"/>
@@ -3322,9 +3338,9 @@
 								Country </span>&#x2002;<xsl:call-template name="CharacterString"/>
 						</xsl:for-each>
 					</dt>
-					<xsl:for-each select="gmd:electronicMailAddress">
+					<xsl:for-each select="gmd:electronicMailAddress[string-length(normalize-space(gco:CharacterString))>0]">
 						<dt>
-							<span class="element"> electronic Mail Address </span>&#x2002;<a>
+							<span class="element"> electronic Mail Address: </span>&#x2002;<a>
 								<!-- xsl:attribute name="href">mailto:<xsl:value-of select="."/>?subject=<xsl:value-of select="//identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString"/></xsl:attribute  -->
 								<xsl:attribute name="href">mailto:<xsl:value-of
 										select="gco:CharacterString"/></xsl:attribute>
@@ -3336,6 +3352,15 @@
 			</dd>
 		</dd>
 		<!-- <br/> -->
+		</xsl:when>
+			<xsl:otherwise>
+				<dd>
+					<dt>
+						<span class="element"> No address provided. </span>
+					</dt>
+				</dd>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<!-- language code list from ISO 639 -->
 	<xsl:template match="gmd:country" mode="arcgis">
@@ -3783,7 +3808,25 @@
 	</xsl:template>
 	<!-- gco:Date_PropertyType -->
 	<xsl:template name="Date_PropertyType">
-		<xsl:value-of select="(gco:Date | gco:DateTime)[1]"/>
+		<!-- generates string from Date and DateTime. Convention is that if an input date
+		only specifies year and a YYYY-MM-DD formated date is requred, the date will be 
+		'YYYY-01-01' and a DateTime will be 'YYYY-01-01T12:00:00'. This transform thus looks 
+		for those filler strings and gets rid of them for display-->
+		<xsl:choose>
+			<xsl:when test="contains(string(gco:Date),'01-01')">
+				<xsl:value-of select="substring(string(gco:Date[1]),1,4)"/>
+			</xsl:when>
+			<xsl:when test="contains(string(gco:DateTime),'01-01')">
+				<xsl:value-of select="substring(string(gco:DateTime[1]),1,4)"/>
+			</xsl:when>
+			<xsl:when test="contains(string(gco:DateTime),'T12:00:00') or
+				contains(string(gco:DateTime),'T00:00:00')">
+				<xsl:value-of select="substring(string(gco:DateTime[1]),1,10)"/>
+			</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="(gco:Date | gco:DateTime)[1]"/>
+		</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
 	<!-- gco:CharacterString , gco:FreeText, gmx:Anchor -->
