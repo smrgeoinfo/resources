@@ -35,7 +35,9 @@
 	SMR 2018-03-18 update header comments, change name so datacite is lower case, for consistency
 	add license and copyright statement.
 	SMR 2018 ? update to use Available date as date released if it is available, otherwise publication year
-		
+	SMR 2018-06-19  add input parameter for gmd:dateStamp named 'updateDate'. This should be the most recent update
+	   date for the source record being transformed. Since DataCiteXML doesn't have an element for the 
+	   metadata update date, this should be populated from the file-system update date
 	-->
     
     
@@ -48,6 +50,9 @@
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is 
     distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
     See the License for the specific language governing permissions and limitations under the License -->
+
+<!-- parameter to pass in the gmd:dateStamp for metadata update date -->
+    <xsl:param name="updateDate"></xsl:param>
 
 <!-- this is used for the Data Centre keyword type for faceting in the search interface (Geoportal) -->
     <xsl:variable name="datacentre">
@@ -283,24 +288,11 @@
             <gmd:dateStamp>
                 <xsl:variable name="theDate">
                     <xsl:choose>
-                        <xsl:when
-                            test="
-                                //*[local-name() = 'date'][starts-with(text(), 'metadata')] and
-                                string-length(normalize-space(substring-after(string(//*[local-name() = 'date'][starts-with(text(), 'metadata')])
-                                , 'metadata update:'))) != ''">
-                            <!-- ieda dataCite labels metadata update date in the date string to avoid ambiguity -->
-                            <xsl:value-of
-                                select="
-                                    normalize-space(substring-after(string(//*[local-name() = 'date'][starts-with(text(), 'metadata')])
-                                    , 'metadata update:'))"/>
-
-                        </xsl:when>
-                        <xsl:when test="//*[local-name() = 'date'][@dateType = 'Updated'] != ''">
-                            <xsl:value-of
-                                select="//*[local-name() = 'date' and @dateType = 'Updated'][1]"/>
+                        <xsl:when test="$updateDate">
+                            <xsl:value-of select="$updateDate"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="''"/>
+                            <xsl:value-of select="$currentDateTime"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
@@ -325,9 +317,13 @@
                         </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="gco:nilReason">
-                            <xsl:value-of select="string('missing')"/>
-                        </xsl:attribute>
+                        <!-- put something in, but flag as bogus -->
+                        <gco:DateTime>
+                            <xsl:value-of select="$currentDateTime"/>
+                            <xsl:attribute name="gco:nilReason">
+                                <xsl:value-of select="string('missing')"/>
+                            </xsl:attribute>
+                        </gco:DateTime>
                     </xsl:otherwise>
                 </xsl:choose>
             </gmd:dateStamp>
