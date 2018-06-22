@@ -3059,6 +3059,7 @@
 					</dt>
 				</xsl:otherwise>
 			</xsl:choose>
+
 			<dl>
 				<dd>
 					<xsl:for-each select="gmd:title">
@@ -3154,6 +3155,7 @@
 					</xsl:for-each>
 			</dd>
 			</dl>
+			
 		</dd>
 	</xsl:template>
 	<!-- Date Information (B.3.2.3 CI_Date) -->
