@@ -16,6 +16,8 @@
 
 ISO The template includes root element xpath for ISO19139 and ISO19139-1 (see line 526).
     
+	NOTE: for local testing uncomment the template match on line 36 and comment out the
+	call template by name on line 37
     
   Stephen M. Richard
     2018-02-25
@@ -23,6 +25,7 @@ ISO The template includes root element xpath for ISO19139 and ISO19139-1 (see li
     
     2018-05-01 version 1.1 update spatialCoverage handling.  Only transforms geographicIdentifier,
     gml:polygon/gml:Point, and gmd:geographicBounding box; other gml geometries are ignored. 
+	2018-06-20  add isopath parameter to insert link to full ISO metadata record in the schema.org scripts
  -->
 
     <xsl:output method="text" indent="yes" encoding="UTF-8"/>
