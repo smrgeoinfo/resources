@@ -7,7 +7,7 @@ What's here
 
 ## displaymetadata.php
 
-PHP page that gets an ISO xml record and transforms to html using teh xsl files in this direcory.
+PHP page that gets an ISO xml record and transforms to html using the xsl files in this direcory.
 
 Calling parameters: displaymetadata.php?file={NNNNNN} or displaymetadata.php?file={NNNNNN}.XXX
 

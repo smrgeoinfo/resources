@@ -1,14 +1,24 @@
 <?php
 /**
  * PHP handler that takes requests to http://{thishost}/metadata/nnnnnnn by the
- * .htaccess file in the htdocs/doi directory where this php is deployed. The
- * ID token ('nnnnnnn') from the DOI is passed as an argument; this scripts gets the 
- * DataCite xml file from the metadata/doi directory and uses the dataciteToHTMLwithSDO.xsl 
- * transdform to convert it to html for display.   The transform also embeds a Schema.org 
+ * .htaccess file in the directory where this php is deployed. The
+ * ID token ('nnnnnnn') from the url is used to construct a URL for the iso record in
+ * sudirectories under http://{thishost}/metadata/iso/xxx where xxx is the abbreviation
+ * for the appropriate IEDA partner system. Uses the numeric ranges assigned to EarthChem (ECL), 
+ * USAP, MGDL, UTIG to set the target directory, and transforms to html to html for display.
+ *   The transform also embeds a Schema.org 
  * JSON-LD script in the <head> section of the html for use by schema.org aware search engines.
+ * for deployment on the get.iedadata.org server in metadata/iso. Content of https://github.com/iedadata/resources/tree/master/iedaisoschemaorg should be deployed in that 
+ * directory, or all the urls and file paths will need to be updated for a different location
  
  * S. M. Richard 2018-01-29
  * smr 2018-03-2018 change file extension on xml transform from xsl to xslt for consistency
+ * smr 2018-06-21  change usap file names from submission-idNNNNNNiso.xml to NNNNNNiso.xml
+ *   so they're consistent with others.  Update header text to conform with current workflow
+ *   (it was out of date, still based on DataCite records.)
+ * smr 2018-06-22 update utig handler (5NNNNN series) to use iso metadeata in metadata/iso/utig
+ *   define transform xslt file location at top for easier maintenance-- only one place to update
+ *   path to the xslt.  Also add php close bracket
  *  
  */
 
@@ -29,8 +39,25 @@ if (strpos($file, ".") === false) {
 $slen = strlen($extension);
 //echo "file extension {$extension}; file {$file}; len {$slen}; id {$id} <p>";
 
-// have to figure out which partner this ID goes with, based on number range
+// use local cached copy of the xslt on the host server in the same directory
+//this is the standard ISO19139 to html display file. For most recent version, see
+// https://github.com/usgin/metadataTransforms (version there will need some 
+//  updates for use with IEDA)
+$xslfile = "http://{$_SERVER['HTTP_HOST']}/metadata/iso/ISO19139ToHTMLwMap.xsl";
+$xslt = new XSLTProcessor();
+$dom = new DomDocument('1.0','utf-8');
+// $xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile))); 
 
+$dom->load($xslfile);
+
+//this is the transformer that will be used; for each transform need to set 
+// the file
+$xslt->importStyleSheet($dom);
+// parameter isopath used to put source path for metadata record in the 
+//  schema.org JSON-LD per DataOne request.
+
+
+// have to figure out which partner this ID goes with, based on number range
 if (substr($id,0,2)== '10' or substr($id,0,2)=='11') {
 	//ecl id range
 	$xmlname= "iso/ecl/" . $id .  "iso.xml";
@@ -39,20 +66,12 @@ if (substr($id,0,2)== '10' or substr($id,0,2)=='11') {
 	$headers = get_headers($service, 1);
 	if ($headers[0] == 'HTTP/1.1 200 OK') {
 		$content = file_get_contents($service);
-		$xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/ISO19139ToHTMLwMap.xsl";
 		
 		if (substr($extension,0,3) == 'htm' or strlen($extension) == 0) { 
 			//convert ISO xml to html with schema.org
-			
-			$xslt = new XSLTProcessor();
-			$dom = new DomDocument('1.0','utf-8');
-			/* $xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile))); */
-
-			$dom->load($xslfile);
-			$xslt->importStyleSheet($dom);
-			$xslt->setParameter('gmd','isopath',$service);
 			//echo $service;
 			$dom->loadXML($content);
+			$xslt->setParameter('gmd','isopath',$service);
 			echo $xslt->transformToXML($dom);
 			//echo $xslt->transformToXml(new SimpleXMLElement($content));
 	
@@ -82,13 +101,13 @@ if (substr($id,0,2)== '10' or substr($id,0,2)=='11') {
 	$headers = get_headers($service, 1);
 	if ($headers[0] == 'HTTP/1.1 200 OK') {
 		$content = file_get_contents($service);
-		$xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/ISO19139ToHTMLwMap.xsl";
 		
 		if (substr($extension,0,3) == 'htm' or strlen($extension) == 0) { 
 			//convert ISO xml to html with schema.org
 			
-			$xslt = new XSLTProcessor();
-			$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile)));
+/* 			$xslt = new XSLTProcessor();
+			$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile))); */
+			
 			$xslt->setParameter('gmd','isopath',$service);
 			echo $xslt->transformToXml(new SimpleXMLElement($content));
 	
@@ -102,29 +121,31 @@ if (substr($id,0,2)== '10' or substr($id,0,2)=='11') {
 	}
 	
 } elseif (substr($id, 0, 2) == '50') {
-	//ASP at UT; no records for these in  ISO folder, use the dataCite record
-	$service = "http://{$_SERVER['HTTP_HOST']}/metadata/doi/{$id}";
+	
+	$xmlname= "iso/utig/" . $id .  "iso.xml";
+	$service = "http://{$_SERVER['HTTP_HOST']}/metadata/{$xmlname}";
 	$headers = get_headers($service, 1);
 	if ($headers[0] == 'HTTP/1.1 200 OK') {
-		$xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/DataciteToISO19139v3.2.xslt";
+/* 		$xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/DataciteToISO19139v3.2.xslt";
 		$xslt = new XSLTProcessor();
-		$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile)));
+		$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile))); */
 		$content = file_get_contents($service);
-		$isoxml = $xslt->transformToXml(new SimpleXMLElement($content));
+		
+/* 		$isoxml = $xslt->transformToXml(new SimpleXMLElement($content)); */
 //		echo $xslt->transformToXml(new SimpleXMLElement($content));
 	
 		if (substr($extension,0,3) == 'htm' or strlen($extension) == 0) { 
 			//convert ISO xml to html with schema.org
-			$xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/ISO19139ToHTMLwMap.xsl";
+			/* $xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/ISO19139ToHTMLwMap.xsl";
 			$xslt = new XSLTProcessor();
 			$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile)));
-			$service = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/{$id}.xml";
+			$service = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/{$id}.xml"; */
 			$xslt->setParameter('gmd','isopath',$service);
-			echo $xslt->transformToXml(new SimpleXMLElement($isoxml));
+			echo $xslt->transformToXml(new SimpleXMLElement($content));
 		} elseif (substr($extension,0,3) == 'xml') {
 			//just echo the ISO xml
 			header( 'Content-Type: application/xml' );
-			echo $isoxml;
+			echo $content;
 		}
 	} else {
 		echo "Invalid DOI, please try again.<p>";
@@ -133,19 +154,18 @@ if (substr($id,0,2)== '10' or substr($id,0,2)=='11') {
 } elseif (substr($id, 0, 2) == '60') {
 	//USAP-DC id range
 		
-	$xmlname= "iso/usap/submission-id" . $id .  "iso.xml";
+	$xmlname= "iso/usap/" . $id .  "iso.xml";
 //	echo "ecl file name $xmlname <p>";	
 	$service = "http://{$_SERVER['HTTP_HOST']}/metadata/{$xmlname}";
 	$headers = get_headers($service, 1);
 	if ($headers[0] == 'HTTP/1.1 200 OK') {
 		$content = file_get_contents($service);
-		$xslfile = "http://{$_SERVER['HTTP_HOST']}/doi/test/isosdo/ISO19139ToHTMLwMap.xsl";
 		
 		if (substr($extension,0,3) == 'htm' or strlen($extension) == 0) { 
 			//convert ISO xml to html with schema.org
 			
-			$xslt = new XSLTProcessor();
-			$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile)));
+/* 			$xslt = new XSLTProcessor();
+			$xslt->importStylesheet(new SimpleXMLElement(file_get_contents($xslfile))); */
 			$xslt->setParameter('gmd','isopath',$service);
 			echo $xslt->transformToXml(new SimpleXMLElement($content));
 	
@@ -159,7 +179,6 @@ if (substr($id,0,2)== '10' or substr($id,0,2)=='11') {
 	}
 	
 }
-
 
 
 /* if ($extension=='xml') {
@@ -184,4 +203,4 @@ if ($headers[0] == 'HTTP/1.1 200 OK') {
 } else {
 	echo "Invalid DOI, please try again.\n";
 } */
-
+?>
