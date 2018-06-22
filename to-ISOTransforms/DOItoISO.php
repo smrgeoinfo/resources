@@ -16,10 +16,12 @@
  * 2018-06/02 NOTE to use this script, you will need to check the file inspection 
      tests, source locations and target locations for consistency with current IEDA 
 	 DataCite xml encoding and get.iedadata.org site configuration.
+ * 2018-06-19 add updateDate parameter to xslt to put in gmd:dateStamp to record the 
+     most recent update to input DataCite XML record.
  */
  
  /*
- * The starting point directory to check. LOcation is relative to the location 
+ * The starting point directory to check. Location is relative to the location 
  *  of the php code on the server */
 $DirectoryToScan = './metadata/doi/';
 /*
@@ -46,7 +48,10 @@ function parse_dir( $dir, $target ) {
 	global $ignore, $filetypes;
 	echo $dir . '<p>' ;
 	// set up the transform 
+	// uncomment this to use a local copy of the DataCite xml to ISO19139 XML transform
 	$xslfile = "http://{$_SERVER['HTTP_HOST']}/metadata/DataciteToISO19139v3.2.xslt";
+	// uncomment this to use the most current version of the transform from USGIN
+	/*$xslfile = "https://raw.githubusercontent.com/usgin/metadataTransforms/master/dataciteToISO19139v3.2.xslt";   */
 	
 	#echo "xslfile: ".$xslfile;
 	$xslt = new XSLTProcessor();
@@ -77,16 +82,21 @@ function parse_dir( $dir, $target ) {
 		}
 		
 		if ( in_array( $theExtension, $filetypes ) ) {
-
+			
+			if (file_exists($file)) {
+				/* this will be used as the gmd:dateStamp for the transformed record */
+				$udate = date ("Y-m-d", filemtime($file));
+			
 			// do the transform
-
-			$service = "http://{$_SERVER['HTTP_HOST']}/metadata/doi/{$file}";
+			/* don't need to read from web, have local file path for the content to transform */
+			/* $service = "http://{$_SERVER['HTTP_HOST']}/metadata/doi/{$file}";
 			echo $service . "<p/>";
 			$headers = get_headers($service, 1);
 			#echo $headers[0]."<p/>";
-			if ($headers[0] == 'HTTP/1.1 200 OK')  {
+			if ($headers[0] == 'HTTP/1.1 200 OK')  { */
 
-				$content = file_get_contents($service);
+				/* $content = file_get_contents($service); */ 
+				$content = file_get_contents($file);
 				//echo 'content length ' . strlen($content). "\r\n";
 				//test to see what source 
 				$test1 = strpos($content, 'alternateIdentifierType="URL">https://csdms.colorado.edu') != false;  #CSDMS model
@@ -101,6 +111,7 @@ function parse_dir( $dir, $target ) {
 				//  DataCite encoding and file locations.
 				if (($test1 or $test2 or $test3 or $test4 or $test5 or $test6) === true)  {
 					//echo $content
+					$xslt->setParameter('', 'updateDate', $udate);
 					$newxml = $xslt->transformToXml(new SimpleXMLElement($content));
 					//echo $newxml;
 					if ($test1) {
@@ -114,6 +125,7 @@ function parse_dir( $dir, $target ) {
 					} elseif ($test5) {
 						$my_file = $target.'ecl/' . $file . 'iso.xml';
 					} else {
+						// write record to 'fail' directory, can't identify the source partner system
 						$thedir = $target.'testfail/';
 						if (!is_dir($thedir)){
 							echo "mkdir: ".$thedir."<br/>";
@@ -135,8 +147,8 @@ function parse_dir( $dir, $target ) {
 					$count = $count + 1;
 				}
 			} 
+			}
 		}
-	}
 	closedir( $handle );
 	echo $count . ' files written';
 	echo '<p>';
