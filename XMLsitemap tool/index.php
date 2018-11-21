@@ -114,9 +114,16 @@ function parse_dir( ) {
 				} 
 				elseif($thisdir == 'usap' ) {
 					// usap 6 digit tokes start with 6
-					// file names like submission-id600009iso.xml
+					// file names like 600009iso.xml
 					
-					$id = substr($file,13,6 );
+					$id = substr($file,0,6 );
+					
+				} 
+				elseif($thisdir == 'utig' ) {
+					// usap 6 digit tokes start with 6
+					// file names like 600009iso.xml
+					
+					$id = substr($file,0,6 );
 					
 				} else {
 					// default is NNNNNN_xxx.xml, file name starts with 6 digit number, delimited
@@ -125,7 +132,7 @@ function parse_dir( ) {
 					
 				}
 				
-				//echo $thisdir . '  ' . $id . '<p>' ;
+				echo $thisdir . '  ' . $id . '<p>' ;
 				
 				// Create a W3C valid date for use in the XML sitemap based on the file modification time
 				if (filemtime( $localpath .'/'. $file )==FALSE) {
